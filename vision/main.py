@@ -1,8 +1,8 @@
 import os
 import sys
 import argparse
-import time
 import numpy as np
+from datasets.mnist_loader import prepare_mnist_images
 import mlperf_loadgen as lg
 from pathlib import Path
 
@@ -12,18 +12,21 @@ sys.path.append(os.path.abspath("."))
 def get_model_runner(model_name):
     if model_name == "efficientnet":
         from vision.efficientnet.inference import EfficientNetMLPerf
-        return EfficientNetMLPerf()
+        return EfficientNetMLPerf(lg)
     elif model_name == "yolo":
         from vision.yolo.inference import YOLOMLPerf
-        return YOLOMLPerf()
+        return YOLOMLPerf(lg)
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, required=True, choices=["efficientnet", "yolo"])
+    parser.add_argument("--model", type=str, default="efficientnet", choices=["efficientnet", "yolo"])
     parser.add_argument("--scenario", type=str, default="SingleStream", choices=["SingleStream", "Offline"])
     args = parser.parse_args()
+
+    # Generate and store MNIST images
+    mnist_images = prepare_mnist_images()
 
     model_runner = get_model_runner(args.model)
 
@@ -41,7 +44,7 @@ def main():
     os.makedirs(log_path, exist_ok=True)
 
     log_settings = lg.LogSettings()
-    log_settings.log_output_dir = log_path
+    log_settings.log_output.outdir = log_path
     log_settings.enable_trace = False
 
     sut = lg.ConstructSUT(
@@ -49,14 +52,14 @@ def main():
         model_runner.flush_queries
     )
     qsl = lg.ConstructQSL(
-        100,  # total samples
-        100,  # active samples
+        len(mnist_images),  # Total MNIST samples
+        len(mnist_images),  # Active samples
         model_runner.load_query_samples,
         model_runner.unload_query_samples
     )
 
     print(f"Running MLPerf Inference for model: {args.model}")
-    lg.StartTest(sut, qsl, settings, log_settings)
+    lg.StartTest(sut, qsl, settings)
 
     lg.DestroyQSL(qsl)
     lg.DestroySUT(sut)
