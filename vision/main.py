@@ -11,10 +11,10 @@ sys.path.append(os.path.abspath("."))
 
 def get_model_runner(model_name):
     if model_name == "efficientnet":
-        from vision.efficientnet.inference import EfficientNetMLPerf
+        from efficientnet.inference import EfficientNetMLPerf
         return EfficientNetMLPerf()
     elif model_name == "yolo":
-        from vision.yolo.inference import YOLOMLPerf
+        from yolo.inference import YOLOMLPerf
         return YOLOMLPerf()
     else:
         raise ValueError(f"Unsupported model: {model_name}")
@@ -40,9 +40,11 @@ def main():
     log_path = f"mlperf_{args.model}_log"
     os.makedirs(log_path, exist_ok=True)
 
+    log_output_settings = lg.LogOutputSettings()
+    log_output_settings.outdir = log_path
+    log_output_settings.copy_summary_to_stdout = True
     log_settings = lg.LogSettings()
-    log_settings.log_output_dir = log_path
-    log_settings.enable_trace = False
+    log_settings.log_output = log_output_settings
 
     sut = lg.ConstructSUT(
         model_runner.issue_queries,

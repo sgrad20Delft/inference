@@ -1,6 +1,6 @@
-from mlperf_loadgen import QuerySampleResponse
-from vision.efficientnet.model import EfficientNetRunner
-from vision.efficientnet.preprocess import preprocess
+import mlperf_loadgen as lg
+from efficientnet.model import EfficientNetRunner
+from efficientnet.preprocess import preprocess
 import torch
 
 class EfficientNetMLPerf:
@@ -18,8 +18,8 @@ class EfficientNetMLPerf:
             input_tensor = self.samples[qs.index]
             output = self.model.infer(input_tensor)
             prediction = torch.argmax(output).item()
-            response = QuerySampleResponse(qs.id, prediction, 1)
-            QuerySampleResponse.enqueue([response])
+            response = lg.QuerySampleResponse(qs.id, prediction, 1)
+            lg.QuerySampleResponse.enqueue([response])
 
     def unload_query_samples(self, samples):
         for s in samples:
