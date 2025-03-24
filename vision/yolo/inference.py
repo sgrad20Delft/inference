@@ -1,4 +1,4 @@
-from mlperf_loadgen import QuerySampleResponse
+from mlcommons_loadgen import QuerySampleResponse
 from vision.yolo.model import YOLORunner
 from vision.yolo.preprocess import preprocess
 
