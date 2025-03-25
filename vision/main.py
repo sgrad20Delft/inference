@@ -11,10 +11,10 @@ sys.path.append(os.path.abspath("."))
 
 def get_model_runner(model_name):
     if model_name == "efficientnet":
-        from vision.efficientnet.inference import EfficientNetMLPerf
+        from efficientnet.inference import EfficientNetMLPerf
         return EfficientNetMLPerf(lg)
     elif model_name == "yolo":
-        from vision.yolo.inference import YOLOMLPerf
+        from yolo.inference import YOLOMLPerf
         return YOLOMLPerf(lg)
     else:
         raise ValueError(f"Unsupported model: {model_name}")
