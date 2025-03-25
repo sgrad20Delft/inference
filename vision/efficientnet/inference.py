@@ -1,6 +1,6 @@
 from mlperf_loadgen import QuerySampleResponse
-from vision.efficientnet.model import EfficientNetRunner
-from vision.efficientnet.preprocess import preprocess
+from efficientnet.model import EfficientNetRunner
+from efficientnet.preprocess import preprocess
 from pathlib import Path
 import torch
 
