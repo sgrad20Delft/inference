@@ -1,53 +1,54 @@
-from mlperf_loadgen import QuerySampleResponse
 from pathlib import Path
+from model_loader import ModelLoader  # Import ModelLoader
+from preprocess import Preprocessor
+from mlperf_loadgen import QuerySampleResponse
 import torch
 
 class ModelPerf:
-    def __init__(self, model_path_or_name, dataset_dir, preprocess_fn, loadgen, model_cls=None):
-        self.dataset_dir = dataset_dir
+    def __init__(self, model_name, model_type, dataset_dir, loadgen, preprocess_fn=None):
+        """
+        MLPerf benchmarking system using ModelLoader.
+        
+        Args:
+            model_path (str): Path to the model file or Hugging Face model name.
+            dataset_dir (str): Path to dataset directory.
+            preprocess_fn (callable): User-provided preprocessing function.
+            loadgen: MLPerf LoadGen instance.
+            model_type (str, optional): Specify "pytorch", "onnx", "tensorflow", or "huggingface". 
+        """
+
+        self.model_loader = ModelLoader(model_name, model_type=model_type)
+        self.dataset_dir = Path(dataset_dir)
+        self.preprocess_fn = Preprocessor(model_type=model_type, user_preprocess_fn=preprocess_fn)
+        self.loadgen = loadgen
         self.index_to_path = self.create_index_to_path()
         self.samples = {}
-        self.preprocess_fn = preprocess_fn  # Custom preprocessing function
-        self.loadgen = loadgen
-
-        # Load model dynamically
-        if model_cls:
-            self.model = model_cls()
-        else:
-            self.model = self.load_model(model_path_or_name)
-
-    def load_model(self, model_path_or_name):
-        """Loads a model dynamically from a given path or name."""
-        if model_path_or_name == "efficientnet":
-            from vision.efficientnet.inference import EfficientNetRunner
-            return EfficientNetRunner()
-        elif model_path_or_name == "yolo":
-            from vision.yolo.inference import YOLORunner
-            return YOLORunner()
-        else:
-            return torch.jit.load(model_path_or_name)  # Load a TorchScript model from file
 
     def create_index_to_path(self):
-        """Creates a mapping from sample indices to image file paths."""
-        image_paths = sorted(Path(self.dataset_dir).glob("*.*"))  # Support multiple formats
+        """Creates a mapping from indices to dataset sample paths."""
+        image_paths = sorted(self.dataset_dir.glob("*.*"))  # Supports multiple file types
         return {i: str(image_paths[i]) for i in range(len(image_paths))}
 
     def load_query_samples(self, samples):
+        """Loads dataset samples into memory after preprocessing."""
         for s in samples:
             img_path = self.index_to_path[s]
-            self.samples[s] = self.preprocess_fn(img_path)
+            self.samples[s] = self.preprocess_fn.preprocess(img_path)
 
     def issue_queries(self, query_samples):
+        """Processes MLPerf queries and runs inference."""
         responses = []
         for qs in query_samples:
             input_tensor = self.samples[qs.index]
-            output = self.model.infer(input_tensor)
+            output = self.model_loader.infer(input_tensor)
 
             # Generalized response handling
-            if hasattr(output, 'xyxy'):  # Object detection (e.g., YOLO)
-                prediction = len(output.xyxy[0])
-            else:  # Classification (e.g., EfficientNet)
+            if isinstance(output, torch.Tensor):
                 prediction = output.argmax().item()
+            elif isinstance(output, list):  # ONNX or TensorFlow returns lists
+                prediction = output[0].argmax()
+            else:
+                raise ValueError("Unsupported model output type.")
 
             response = QuerySampleResponse(qs.id, prediction, 1)
             responses.append(response)
@@ -55,12 +56,15 @@ class ModelPerf:
         self.loadgen.QuerySamplesComplete(responses)
 
     def unload_query_samples(self, samples):
+        """Removes samples from memory."""
         for s in samples:
-            del self.samples[s]
+            if s in self.samples:
+                del self.samples[s]
 
     def dataset_size(self):
-        """Returns the total number of samples in the dataset."""
+        """Returns total number of samples in dataset."""
         return len(self.index_to_path)
-
+    
+    
     def flush_queries(self):
         pass
