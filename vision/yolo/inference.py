@@ -1,16 +1,24 @@
 from mlcommons_loadgen import QuerySampleResponse
 from vision.yolo.model import YOLORunner
+from pathlib import Path
 from vision.yolo.preprocess import preprocess
 
 class YOLOMLPerf:
     def __init__(self):
         self.model = YOLORunner()
+        self.dataset_dir = "mnist_images"
+        self.index_to_path = self.create_index_to_path()
         self.samples = {}
+
+    def create_index_to_path(self):
+        """Creates a mapping from sample indices to MNIST image file paths."""
+        image_paths = sorted(Path(self.dataset_dir).glob("*.png"))
+        return {i: str(image_paths[i]) for i in range(len(image_paths))}
 
     def load_query_samples(self, samples):
         for s in samples:
-            img_path = s.index
-            self.samples[s.index] = preprocess(img_path)
+            img_path = self.index_to_path[s]
+            self.samples[s] = preprocess(img_path)
 
     def issue_queries(self, query_samples):
         for qs in query_samples:
