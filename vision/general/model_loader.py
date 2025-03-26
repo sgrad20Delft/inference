@@ -76,7 +76,9 @@ class ModelLoader:
             with torch.no_grad():
                 return self.model(input_tensor)
         elif self.model_type == "onnx":
-            return self.model.run(None, {self.model.get_inputs()[0].name: input_tensor.numpy()})
+            if hasattr(input_tensor, "numpy"):  # If it's a PyTorch tensor
+                input_tensor = input_tensor.numpy()
+            return self.model.run(None, {self.model.get_inputs()[0].name: input_tensor})
         elif self.model_type == "tensorflow":
             return self.model(input_tensor)
         elif self.model_type == "huggingface":
