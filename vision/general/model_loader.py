@@ -1,9 +1,8 @@
 import torch
 import onnxruntime as ort
 import tensorflow as tf
-import numpy as np
 import torchvision.models as models
-from transformers import AutoModel, ViTFeatureExtractor , AutoModelForImageClassification
+from transformers import AutoModelForImageClassification
 
 class ModelLoader:
     def __init__(self, model_path, model_type, model_architecture=None):
@@ -24,7 +23,7 @@ class ModelLoader:
         elif model_type == "tensorflow":
             return self.load_tensorflow_model(model_path)
         elif model_type == "huggingface":
-            return AutoModelForImageClassification.from_pretrained(model_path)
+            return AutoModelForImageClassification.from_pretrained(model_path, trust_remote_code=True)
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
         
