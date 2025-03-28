@@ -58,8 +58,9 @@ class ModelLoader:
         
         return model.signatures['serving_default']  # This returns the inference function
 
-    def preprocess(self, input_data):
-        """Handle preprocessing based on model type."""
+
+    #def preprocess(self, input_data):
+        """Handle preprocessing based on model type.
         if self.model_type == "pytorch" or self.model_type == "onnx":
             return torch.tensor(input_data).float()
         elif self.model_type == "tensorflow":
@@ -68,7 +69,7 @@ class ModelLoader:
             feature_extractor = ViTFeatureExtractor.from_pretrained(self.model)
             return feature_extractor(input_data, return_tensors="pt")
         else:
-            raise ValueError("Unknown preprocessing method")
+            raise ValueError("Unknown preprocessing method")"""
         
     def infer(self, input_tensor):
         """Runs inference on the model."""

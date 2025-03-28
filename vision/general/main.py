@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import mlperf_loadgen as lg
+import shutil
 from pathlib import Path
 from inference import ModelPerf  # Generalized model handler
 
@@ -43,24 +44,18 @@ def main():
     # Initialize Model Performance Evaluation
     model_perf = ModelPerf(args.model, args.model_type, args.dataset, loadgen=lg, preprocess_fn=custom_preprocess_fn)
 
-
     # LoadGen config
     scenario_map = {
         "SingleStream": lg.TestScenario.SingleStream,
         "Offline": lg.TestScenario.Offline
     }
 
+    log_path = Path(f"./mlperf_{Path(args.model).stem}_log")
+    os.makedirs(log_path, exist_ok=True)
+
     settings = lg.TestSettings()
     settings.scenario = scenario_map[args.scenario]
     settings.mode = lg.TestMode.PerformanceOnly
-
-    log_path = f"mlperf_{Path(args.model).stem}_log"
-    os.makedirs(log_path, exist_ok=True)
-
-    log_settings = lg.LogSettings()
-    log_settings.log_output.outdir = log_path
-    log_settings.enable_trace = False
-
 
     sut = lg.ConstructSUT(
         model_perf.issue_queries,
@@ -78,6 +73,26 @@ def main():
 
     lg.DestroyQSL(qsl)
     lg.DestroySUT(sut)
+
+    # List of MLPerf log files
+    log_files = [
+        "mlperf_log_accuracy.json",
+        "mlperf_log_detail.txt",
+        "mlperf_log_summary.txt",
+        "mlperf_log_trace.json"
+    ]
+
+    # Move each log file if it exists
+    for log_file in log_files:
+        src = Path(log_file)
+        dest = log_path / log_file  # Destination in the log directory
+
+        if src.exists():
+            shutil.move(str(src), str(dest))  # Move the file
+            print(f"Moved {src} -> {dest}")
+        else:
+            print(f"File {src} not found, skipping.")
+
 
 if __name__ == "__main__":
     main()
