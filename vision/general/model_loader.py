@@ -1,9 +1,8 @@
 import torch
 import onnxruntime as ort
 import tensorflow as tf
-import numpy as np
 import torchvision.models as models
-from transformers import AutoModel, ViTFeatureExtractor , AutoModelForImageClassification
+from transformers import AutoModelForImageClassification
 
 class ModelLoader:
     def __init__(self, model_path, model_type, model_architecture=None):
@@ -24,7 +23,7 @@ class ModelLoader:
         elif model_type == "tensorflow":
             return self.load_tensorflow_model(model_path)
         elif model_type == "huggingface":
-            return AutoModelForImageClassification.from_pretrained(model_path)
+            return AutoModelForImageClassification.from_pretrained(model_path, trust_remote_code=True)
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
         
@@ -58,8 +57,9 @@ class ModelLoader:
         
         return model.signatures['serving_default']  # This returns the inference function
 
-    def preprocess(self, input_data):
-        """Handle preprocessing based on model type."""
+
+    #def preprocess(self, input_data):
+        """Handle preprocessing based on model type.
         if self.model_type == "pytorch" or self.model_type == "onnx":
             return torch.tensor(input_data).float()
         elif self.model_type == "tensorflow":
@@ -68,7 +68,7 @@ class ModelLoader:
             feature_extractor = ViTFeatureExtractor.from_pretrained(self.model)
             return feature_extractor(input_data, return_tensors="pt")
         else:
-            raise ValueError("Unknown preprocessing method")
+            raise ValueError("Unknown preprocessing method")"""
         
     def infer(self, input_tensor):
         """Runs inference on the model."""

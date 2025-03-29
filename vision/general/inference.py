@@ -19,7 +19,7 @@ class ModelPerf:
 
         self.model_loader = ModelLoader(model_name, model_type=model_type)
         self.dataset_dir = Path(dataset_dir)
-        self.preprocess_fn = Preprocessor(model_type=model_type, user_preprocess_fn=preprocess_fn)
+        self.preprocess_fn = Preprocessor(model_type, model_name, user_preprocess_fn=preprocess_fn)
         self.loadgen = loadgen
         self.index_to_path = self.create_index_to_path()
         self.samples = {}
@@ -47,6 +47,8 @@ class ModelPerf:
                 prediction = output.argmax().item()
             elif isinstance(output, list):  # ONNX or TensorFlow returns lists
                 prediction = output[0].argmax()
+            elif hasattr(output, "logits"):  # Hugging Face ImageClassifierOutput
+                prediction = output.logits.argmax().item()
             else:
                 raise ValueError("Unsupported model output type.")
 

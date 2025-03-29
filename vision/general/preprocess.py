@@ -2,9 +2,9 @@ import torch
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-
+from transformers import AutoImageProcessor
 class Preprocessor:
-    def __init__(self, model_type, user_preprocess_fn=None, input_size=(224, 224)):
+    def __init__(self, model_type, model_name, user_preprocess_fn=None, input_size=(224, 224)):
         """
         Handles input preprocessing based on model type.
         
@@ -13,6 +13,7 @@ class Preprocessor:
             user_preprocess_fn (callable, optional): Custom preprocessing function.
             input_size (tuple): Target image size (default 224x224).
         """
+        self.model_name = model_name
         self.model_type = model_type
         self.user_preprocess_fn = user_preprocess_fn
         self.input_size = input_size  # Resize all images to a fixed size
@@ -63,6 +64,5 @@ class Preprocessor:
 
     def _preprocess_huggingface(self, image):
         """Preprocess for Hugging Face models (use Hugging Face tokenizer)."""
-        from transformers import AutoFeatureExtractor
-        extractor = AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224")  # Example extractor
+        extractor = AutoImageProcessor.from_pretrained(self.model_name)
         return extractor(image, return_tensors="pt")  # Convert to tensor
