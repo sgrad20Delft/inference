@@ -36,3 +36,16 @@ Example:
 python main.py --model=google/vit-base-patch16-224-in21k --data=D:\\Program Files (x86)\\inference\\mnist_images",
               --scenario=SingleStream --model_type=huggingface
 ```
+Current readme:
+```console
+python3 vision/general/main.py \                             
+  --model vision/general/models/efficientnet_b0.pth \
+  --model_type pytorch \
+  --model_architecture efficientnet_b0 \
+  --dataset vision/dataset_dir/mnist/mnist_images \
+  --scenario SingleStream \
+  --task_type classification \
+  --labels_dict vision/dataset_dir/mnist/labels.json \
+  --flops 390000000 \
+  --preprocess_fn_file vision/general/preprocess.py
+```
