@@ -9,3 +9,4 @@ loadgen/mlcommons_loadgen.egg-info/
 loadgen/mlperf_conf.h
 vision/.DS_Store
 vision/datasets/.DS_Store
+vision/dataset_dir
