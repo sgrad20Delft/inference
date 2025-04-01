@@ -5,7 +5,7 @@ from mlperf_loadgen import QuerySampleResponse
 import torch
 
 class ModelPerf:
-    def __init__(self, model_name, model_type, dataset_dir, loadgen, preprocess_fn=None):
+    def __init__(self, model_name, model_type, dataset_dir, loadgen, preprocess_fn=None,model_architecture=None):
         """
         MLPerf benchmarking system using ModelLoader.
         
@@ -17,7 +17,7 @@ class ModelPerf:
             model_type (str, optional): Specify "pytorch", "onnx", "tensorflow", or "huggingface". 
         """
 
-        self.model_loader = ModelLoader(model_name, model_type=model_type)
+        self.model_loader = ModelLoader(model_name, model_type=model_type,model_architecture=model_architecture)
         self.dataset_dir = Path(dataset_dir)
         self.preprocess_fn = Preprocessor(model_type, model_name, user_preprocess_fn=preprocess_fn)
         self.loadgen = loadgen

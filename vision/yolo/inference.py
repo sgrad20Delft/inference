@@ -1,7 +1,8 @@
 from mlcommons_loadgen import QuerySampleResponse
-from vision.yolo.model import YOLORunner
+from vision.metrics import YOLORunner
 from pathlib import Path
-from vision.yolo.preprocess import preprocess
+from vision.yolo import preprocess
+
 
 class YOLOMLPerf:
     def __init__(self):

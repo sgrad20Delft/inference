@@ -1,3 +1,4 @@
+
 import torch
 import onnxruntime as ort
 import tensorflow as tf
@@ -17,6 +18,7 @@ class ModelLoader:
             # Use the model architecture passed as an argument or default to resnet18
             model = self.load_pytorch_model(model_path)
             model.eval()  # Set the model to evaluation mode
+            print("Model loaded")
             return model
         elif model_type == "onnx":
             return ort.InferenceSession(model_path)
@@ -29,6 +31,7 @@ class ModelLoader:
         
     def load_pytorch_model(self, model_path):
         """Dynamically load a PyTorch model based on its architecture."""
+        print("Got this architecture: ")
         if self.model_architecture is None:
             self.model_architecture = "resnet18"  # Default architecture
         
@@ -36,11 +39,17 @@ class ModelLoader:
         if self.model_architecture == "resnet18":
             model = models.resnet18()
         elif self.model_architecture == "efficientnet_b0":
+            print("Efficientnet")
             model = models.efficientnet_b0()
         elif self.model_architecture == "alexnet":
             model = models.alexnet()
         else:
             raise ValueError(f"Unsupported PyTorch model architecture: {self.model_architecture}")
+        # model_path = Path(model_path) if model_path else None
+        # if model_path is None or not model_path.exists():
+        #     print(f"⚠️ Model file '{model_path}' not found. Downloading pretrained weights from torchvision...")
+        #     model = models.__dict__[self.model_architecture](pretrained=True)
+        #     return model
 
         # Load the model's state_dict (weights)
         state_dict = torch.load(model_path, map_location="cpu")
@@ -58,17 +67,17 @@ class ModelLoader:
         return model.signatures['serving_default']  # This returns the inference function
 
 
-    #def preprocess(self, input_data):
-        """Handle preprocessing based on model type.
-        if self.model_type == "pytorch" or self.model_type == "onnx":
-            return torch.tensor(input_data).float()
-        elif self.model_type == "tensorflow":
-            return tf.convert_to_tensor(input_data, dtype=tf.float32)
-        elif self.model_type == "huggingface":
-            feature_extractor = ViTFeatureExtractor.from_pretrained(self.model)
-            return feature_extractor(input_data, return_tensors="pt")
-        else:
-            raise ValueError("Unknown preprocessing method")"""
+    # #def preprocess(self, input_data):
+    #     """Handle preprocessing based on model type.
+    #     if self.model_type == "pytorch" or self.model_type == "onnx":
+    #         return torch.tensor(input_data).float()
+    #     elif self.model_type == "tensorflow":
+    #         return tf.convert_to_tensor(input_data, dtype=tf.float32)
+    #     elif self.model_type == "huggingface":
+    #         feature_extractor = ViTFeatureExtractor.from_pretrained(self.model)
+    #         return feature_extractor(input_data, return_tensors="pt")
+    #     else:
+    #         raise ValueError("Unknown preprocessing method")"""
         
     def infer(self, input_tensor):
         """Runs inference on the model."""

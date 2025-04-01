@@ -1,10 +1,8 @@
 import os
 import sys
 import argparse
-import numpy as np
 from datasets.mnist_loader import prepare_mnist_images
 import mlperf_loadgen as lg
-from pathlib import Path
 
 # Make sure imports work
 sys.path.append(os.path.abspath("."))
@@ -13,15 +11,15 @@ def get_model_runner(model_name):
     if model_name == "efficientnet":
         from efficientnet.inference import EfficientNetMLPerf
         return EfficientNetMLPerf(lg)
-    elif model_name == "yolo":
-        from yolo.inference import YOLOMLPerf
+    elif model_name == "metrics":
+        from vision.metrics import YOLOMLPerf
         return YOLOMLPerf(lg)
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="efficientnet", choices=["efficientnet", "yolo"])
+    parser.add_argument("--model", type=str, default="efficientnet", choices=["efficientnet", "metrics"])
     parser.add_argument("--scenario", type=str, default="SingleStream", choices=["SingleStream", "Offline"])
     args = parser.parse_args()
 

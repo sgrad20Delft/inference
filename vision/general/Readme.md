@@ -6,6 +6,11 @@ Navigate to the loadgen folder and run:
 $env:CFLAGS = "-std=c++14 -O3"
 python -m pip install .
 ```
+For macOS, 
+```console
+export CFLAGS="-std=c++14 -O3"
+python -m pip install .
+```
 
 This installs the c++ library version of mlperf.
 

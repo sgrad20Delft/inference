@@ -3,3 +3,9 @@ libmlperf_loadgen.a
 __pycache__/
 generated/
 *.swp
+vision/metrics/EnergiBridge
+vision/metrics/venv
+loadgen/mlcommons_loadgen.egg-info/
+loadgen/mlperf_conf.h
+vision/.DS_Store
+vision/datasets/.DS_Store
