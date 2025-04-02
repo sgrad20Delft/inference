@@ -9,6 +9,8 @@ class ModelLoader:
     def __init__(self, model_path, model_type, model_architecture=None):
         self.model_type = model_type
         self.model_architecture = model_architecture
+        self.device=torch.device("cuda:0" if torch.cuda.is_available()else "mps" if torch.backends.mps.is_available() else "cpu")
+        print("Device: " + str(self.device))
         self.model = self.load_model(model_path, model_type)
 
     def load_model(self, model_path, model_type):
@@ -25,7 +27,10 @@ class ModelLoader:
         elif model_type == "tensorflow":
             return self.load_tensorflow_model(model_path)
         elif model_type == "huggingface":
-            return AutoModelForImageClassification.from_pretrained(model_path, trust_remote_code=True)
+            model=AutoModelForImageClassification.from_pretrained(model_path, trust_remote_code=True)
+            model.to(self.device)
+            model.eval()
+            return model
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
         
@@ -53,13 +58,14 @@ class ModelLoader:
 
         # Load the model's state_dict (weights)
         state_dict = torch.load(model_path, map_location="cpu")
-        model.load_state_dict(state_dict)  # Load the weights into the model
+        model.load_state_dict(state_dict)
+        model.to(self.device)# Load the weights into the model
         return model
 
     def load_tensorflow_model(self, model_path):
         """Loads a TensorFlow model from a SavedModel format."""
         model = tf.saved_model.load(model_path)
-        
+        print("TF Devices:", tf.config.list_physical_devices())
         # Check available signatures and return the default one
         if 'serving_default' not in model.signatures:
             raise ValueError(f"Model does not contain the expected 'serving_default' signature.")
@@ -82,6 +88,7 @@ class ModelLoader:
     def infer(self, input_tensor):
         """Runs inference on the model."""
         if self.model_type == "pytorch":
+            input_tensor = input_tensor.to(self.device)
             with torch.no_grad():
                 return self.model(input_tensor)
         elif self.model_type == "onnx":

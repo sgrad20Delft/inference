@@ -76,8 +76,8 @@ def main():
     print(rapl_path)
     energy_logger = UnifiedLogger(
         experiment_name=experiment_name,
-        cc_output_dir=f'metrics/logs/{experiment_name}/codecarbon',
-        eb_output_file=f'metrics/logs/{experiment_name}/energibridge.csv',
+        cc_output_dir=f'./vision/metrics/logs/{experiment_name}/codecarbon',
+        eb_output_file=f'./vision/metrics/logs/{experiment_name}/energibridge.csv',
         rapl_power_path=rapl_path
     )
 
@@ -113,6 +113,7 @@ def main():
     lg.DestroyQSL(qsl)
     lg.DestroySUT(sut)
 
+    print("Starting Evaluation:")
     # Evaluate Accuracy
     if args.task_type == 'classification':
         accuracy, _ = evaluate_classification_accuracy(model_perf, args.dataset, labels_dict)
@@ -120,13 +121,15 @@ def main():
         accuracy, _ = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict)
     else:
         raise NotImplementedError("Segmentation task not implemented yet.")
-
+    print(f"Accuracy: {accuracy}")
+    print("Starting EDE Score Calculation: Step Normalization")
     # Dual-reference normalization
     normalizer = DualReferenceNormalizer()
     total_energy_wh =  energy_infer["total_energy_wh"]
     normalized_energy = normalizer.normalize_energy(total_energy_wh)
 
     # Compute penalty factor dynamically
+    print("Starting EDE Score Calculation: Step edecay penalty factor computation")
     baseline_accuracy = normalizer.refs['accuracy_threshold'][args.task_type]
     penalty_factor = EDECycleCalculator.compute_penalty(accuracy, baseline_accuracy)
 

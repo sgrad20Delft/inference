@@ -19,6 +19,8 @@ Then navigate to vision/general and install the python packages from requirement
 ```console
 pip install -r requirements.txt
 ```
+#### Energibridge
+Make sure to have energibridge installed in your local machine, particularly under in vision/metrics of project repo. For installation, refer to the github page of energibridge(https://github.com/tdurieux/EnergiBridge/tree/main)
 
 ### Running
 
@@ -29,6 +31,9 @@ To run a test on a model, run main.py in vision/general. Main.py takes a number 
 - model_type. The type of model to test. Possible choices are ["pytorch", "onnx", "huggingface"].
 - scenario. The scenario to run the test in. Possible choices are ["SingleStream", "Offline"].
 - preprocess_fn_file. Path to a file with a custom preprocessing function (optional)
+- flops. Number of floating point operations 
+- task_type. Type of computer vision task
+- model-architecture. Type of model to be installed
 
 Example:
 

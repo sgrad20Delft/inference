@@ -38,8 +38,16 @@ class ModelPerf:
     def issue_queries(self, query_samples):
         """Processes MLPerf queries and runs inference."""
         responses = []
-        for qs in query_samples:
+        experiment_name = getattr(self.model_loader, "model_architecture", "default_model")
+        log_dir = Path(f"logs/{experiment_name}")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file_path = log_dir / "inference_sequence.log"
+        with open(log_file_path, "a") as log_file:
+         for qs in query_samples:
             input_tensor = self.samples[qs.index]
+            image_path = self.index_to_path[qs.index]
+            print(f"🔍 Inference on sample ID: {qs.index}, file: {image_path}")
+            log_file.write(f"Inference on sample ID: {qs.index}, file: {image_path}\n")
             output = self.model_loader.infer(input_tensor)
 
             # Generalized response handling

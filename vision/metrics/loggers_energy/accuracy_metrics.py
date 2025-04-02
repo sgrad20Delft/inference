@@ -60,6 +60,7 @@ def evaluate_classification_accuracy(
         total += 1
 
     accuracy = (correct / total) if total > 0 else 0.0
+    print(f"Accuracy: {accuracy:.2f}")
     return accuracy, total
 
 # ---------------------------------------------------------------------------
