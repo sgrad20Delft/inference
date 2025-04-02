@@ -81,12 +81,6 @@ def main():
         rapl_power_path=rapl_path
     )
 
-    # === Training Phase ===
-    print("⚙️ Training phase with energy tracking:")
-    energy_logger.start()
-    print("Training...")  # Replace with your actual training logic here
-    energy_train = energy_logger.stop()
-
     # LoadGen config
     scenario_map = {
         "SingleStream": lg.TestScenario.SingleStream,
@@ -129,7 +123,7 @@ def main():
 
     # Dual-reference normalization
     normalizer = DualReferenceNormalizer()
-    total_energy_wh = energy_train["total_energy_wh"] + energy_infer["total_energy_wh"]
+    total_energy_wh =  energy_infer["total_energy_wh"]
     normalized_energy = normalizer.normalize_energy(total_energy_wh)
 
     # Compute penalty factor dynamically
@@ -140,7 +134,6 @@ def main():
     ede_score = EDECycleCalculator.compute_ede_cycle(
         accuracy=accuracy,
         flops=args.flops,
-        train_energy=energy_train["total_energy_wh"],
         inference_energy=energy_infer["total_energy_wh"],
         alpha=2
     )
@@ -168,7 +161,7 @@ def main():
 # === Final Comprehensive Benchmark Report ===
     print("Final Benchmark Report:")
     print(f"Accuracy: {accuracy}")
-    print(f"Total Energy (Wh): {total_energy_wh}")
+    print(f"Inference Energy (Wh): {energy_infer['total_energy_wh']}")
     print(f"Normalized Energy: {normalized_energy}")
     print(f"Penalty Factor: {penalty_factor}")
     print(f"Final EDE Score (with penalty): {final_ede_score}")

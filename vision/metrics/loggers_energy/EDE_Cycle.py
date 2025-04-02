@@ -8,8 +8,8 @@ class EDECycleCalculator:
             return 1.0
         return (accuracy / baseline_accuracy) ** beta
     @staticmethod
-    def compute_ede_cycle(accuracy, flops, train_energy, inference_energy, alpha):
-        total_energy = train_energy + inference_energy
+    def compute_ede_cycle(accuracy, flops, inference_energy, alpha):
+        total_energy = inference_energy
         try:
             denominator = math.log(flops) * total_energy
             if denominator == 0:
