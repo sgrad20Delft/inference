@@ -279,18 +279,18 @@ def main():
         sys.exit(1)
 
     # RUN PerformanceOnly Mode
-    try:
-        print("\n=== Running PerformanceOnly benchmark ===")
-        perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
-        print(f"Performance energy result: {perf_energy}")
-        # Force garbage collection before next test
-        gc.collect()
-        print("Waiting 10 seconds before next test...")
-        sleep(10)
-    except Exception as e:
-        print(f"Error in PerformanceOnly benchmark: {e}")
-        traceback.print_exc()
-        perf_energy = {"total_energy_wh": 0.0}
+    # try:
+    #     print("\n=== Running PerformanceOnly benchmark ===")
+    #     perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
+    #     print(f"Performance energy result: {perf_energy}")
+    #     # Force garbage collection before next test
+    #     gc.collect()
+    #     print("Waiting 10 seconds before next test...")
+    #     sleep(10)
+    # except Exception as e:
+    #     print(f"Error in PerformanceOnly benchmark: {e}")
+    #     traceback.print_exc()
+    #     perf_energy = {"total_energy_wh": 0.0}
 
     #RUN AccuracyOnly Mode
     try:

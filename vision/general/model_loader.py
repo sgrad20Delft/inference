@@ -63,7 +63,6 @@ class ModelLoader:
 
     def infer(self, input_tensor):
         if self.model_type == "pytorch":
-            self.model.eval()
             input_tensor = input_tensor.to("cpu")
             # print("DEBUG: final input_tensor shape =", input_tensor.shape)
             if input_tensor.dim() == 5 and input_tensor.shape[1] == 1:
@@ -71,7 +70,7 @@ class ModelLoader:
             elif input_tensor.ndim == 3:
                 input_tensor = input_tensor.unsqueeze(0)  # Add batch dim
 
-            input_tensor = input_tensor.float()
+            input_tensor = input_tensor.float().detach().clone().to(self.device)
 
             with torch.no_grad():
                 try:

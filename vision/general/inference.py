@@ -97,7 +97,7 @@ class ModelPerf:
             batch_indices = []
             all_responses = []
             total_processed = 0
-            countsample=0
+
             with open(log_file_path, "a") as log_file:
                 print(f"Processing {len(query_samples)} query samples...")
                 log_file.write(f"Processing {len(query_samples)} query samples\n")
@@ -113,23 +113,23 @@ class ModelPerf:
                             continue
 
                         img_path = self.index_to_path[qs.index]
-                        print(f"Image path for sample {qs.index}: {img_path}")
-                        input_tensor = self.samples[qs.index]
-                        print(f"Input tensor shape for sample {qs.index}: {input_tensor.shape}")
-                        countsample+=1
-                        print(f"countsample: {countsample}")
-                        # Validate
-                        if not isinstance(input_tensor, (torch.Tensor, np.ndarray, dict)):
-                            print(f"Warning: Sample {qs.index} invalid type: {type(input_tensor)}")
+                        raw_input = self.samples[qs.index]
+                        self.inference_indices.add(img_path)
+
+                        # Validate input type and prepare
+                        if isinstance(raw_input, np.ndarray):
+                            input_tensor = torch.from_numpy(np.copy(raw_input))
+                        elif isinstance(raw_input, torch.Tensor):
+                            input_tensor = raw_input.detach().clone()
+                        else:
+                            print(f"Warning: Unexpected input type for {qs.index}: {type(raw_input)}")
                             continue
+
+                        input_tensor = input_tensor.float().to(self.device)
 
                         batch_inputs.append(input_tensor)
                         batch_indices.append(qs)
-                        self.inference_indices.add(img_path)
 
-                        # ─────────────────────────────────────────────────────────────────
-                        # 1) REDUCE BATCH SIZE
-                        # We'll run inference every 8 inputs, not 16 or 32
                         if len(batch_inputs) >= 8:
                             batch_responses = []
                             self._run_batch(batch_inputs, batch_indices, batch_responses)
@@ -138,7 +138,6 @@ class ModelPerf:
                             batch_inputs = []
                             batch_indices = []
 
-                            # Force partial results to LoadGen every 1000
                             if total_processed % 1000 == 0:
                                 log_file.write(f"Completed {total_processed} samples - sending to loadgen\n")
                                 try:
@@ -147,25 +146,21 @@ class ModelPerf:
                                 except Exception as e:
                                     print(f"Error sending partial responses to loadgen: {e}")
 
-                            # ─────────────────────────────────────────────────────
-                            # Force more frequent GC
-                            if i % 200 == 0:  # every 200 queries
+                            if i % 200 == 0:
                                 gc.collect()
                                 if torch.cuda.is_available():
                                     torch.cuda.empty_cache()
-                            # ─────────────────────────────────────────────────────
 
                     except Exception as e:
-                        print(f"Error processing sample {qs.index}: {str(e)}")
+                        print(f"Error processing sample {qs.index}: {e}")
                         traceback.print_exc()
 
-                # Run remaining
+                # Final flush
                 if batch_inputs:
                     batch_responses = []
                     self._run_batch(batch_inputs, batch_indices, batch_responses)
                     all_responses.extend(batch_responses)
 
-                # Send any leftover responses
                 if all_responses:
                     try:
                         self.loadgen.QuerySamplesComplete(all_responses)
@@ -173,9 +168,11 @@ class ModelPerf:
                         print(f"Error sending final responses to loadgen: {e}")
 
                 print(f"Completed all {len(query_samples)} samples")
+
         except Exception as e:
-            print(f"Error in issue_queries: {str(e)}")
+            print(f"Fatal error in issue_queries: {e}")
             traceback.print_exc()
+
         finally:
             gc.collect()
             if torch.cuda.is_available():
@@ -185,13 +182,23 @@ class ModelPerf:
         for inp, idx in zip(inputs, indices):
             try:
                 if isinstance(inp, np.ndarray):
-                    inp = torch.from_numpy(inp)
-                inp = inp.to(self.device)
+                    # SAFETY: Ensure we’re not using a shared-memory view
+                    inp = torch.from_numpy(np.copy(inp))
+                elif not isinstance(inp, torch.Tensor):
+                    raise TypeError(f"Unexpected input type: {type(inp)}")
+
+                # SAFETY: Ensure tensor is CPU, float, and not corrupted
+                inp = inp.detach().clone().float().to(self.device)
+
                 output = self.model_loader.infer(inp)
                 pred = self._get_prediction_from_output(output)
                 responses.append(QuerySampleResponse(idx.id, pred, 1))
+
             except Exception as e:
                 print(f"Error with sample {idx.index}: {e}")
+                traceback.print_exc()
+                # Fail-safe response
+                responses.append(QuerySampleResponse(idx.id, 0, 1))
 
     def _get_predictions_from_output(self, outputs, batch_size):
         """Extract predictions from model outputs."""
