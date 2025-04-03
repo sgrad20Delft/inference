@@ -1,7 +1,7 @@
 import json
 
 class DualReferenceNormalizer:
-    def __init__(self, reference_config='reference_config.json'):
+    def __init__(self, reference_config='vision/metrics/loggers_energy/reference_config.json'):
         with open(reference_config, 'r') as f:
             self.refs = json.load(f)
 

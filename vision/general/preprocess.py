@@ -6,15 +6,18 @@ from transformers import AutoImageProcessor
 import torchvision.transforms as T
 
 transform = T.Compose([
-    T.Grayscale(num_output_channels=3),  # Convert 1 channel → 3
+    # T.Grayscale(num_output_channels=3),  # Convert 1 channel → 3
     T.Resize((224, 224)),                # ResNet18 input size
     T.ToTensor(),                        # Convert to tensor
     T.Normalize(mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225])  # Imagenet normalization
 ])
 def custom_preprocess(image_path):
-    image = Image.open(image_path).convert("L").resize((28, 28))
-    return transform(image).unsqueeze(0)
+    # print(f"[CUSTOM PREPROCESS] Handling image: {image_path}")
+    image = Image.open(image_path).convert("RGB").resize((28, 28))
+    tensor=transform(image)
+    # print("[CUSTOM PREPROCESS] shape:", tensor.shape)
+    return tensor
 
 
 class Preprocessor:

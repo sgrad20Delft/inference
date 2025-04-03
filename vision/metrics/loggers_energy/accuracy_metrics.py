@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 import numpy as np
 import glob
 import torch
@@ -8,6 +10,8 @@ import pycocotools.cocoeval as cocoeval
 from PIL import Image
 import nltk
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+from tqdm import tqdm
+import os
 
 try:
     nltk.data.find("tokenizers/punkt")
@@ -17,51 +21,49 @@ except LookupError:
 # ---------------------------------------------------------------------------
 # 1. Classification Accuracy
 # ---------------------------------------------------------------------------
-def evaluate_classification_accuracy(
-    model_perf,
-    dataset_dir: str,
-    labels_dict: dict
-):
-    """
-    Evaluate classification accuracy over a dataset using your ModelPerf object.
+def evaluate_classification_accuracy(model_perf, dataset_path, labels_dict, subset=None):
 
-    labels_dict should map:
-        image_filename (str) -> ground_truth_label (int).
 
-    We skip images not in labels_dict, so we don't do inference if there's no valid ground truth label.
-
-    Returns:
-        (accuracy, sample_count)
-    """
-    image_files = glob.glob(os.path.join(dataset_dir, "*"))
-    total = 0
     correct = 0
+    total = 0
 
-    for img_path in image_files:
-        filename = os.path.basename(img_path)
+    dataset_path = Path(dataset_path)
+    all_paths = list(dataset_path.glob("**/*.png")) + list(dataset_path.glob("**/*.jpg")) + list(dataset_path.glob("**/*.jpeg"))
+
+
+    if subset:
+
+        sample_paths = [all_paths[i] for i in subset if i < len(all_paths)]
+    else:
+        sample_paths = all_paths
+
+    print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
+    with open("vision/dataset_dir/mnist/mnist_images/labels.json", "r") as f:
+        labels_dict = json.load(f)
+
+    for sample_path in tqdm(sample_paths):
+        # Extract ground truth label from filename, assuming format: <label>_<something>.png
+        filename = sample_path.name  # e.g. "0_20551.png"
         if filename not in labels_dict:
+            print(f"Warning: {filename} not found in labels_dict; skipping.")
             continue
 
-        # Preprocess + inference via model_perf
-        processed_input = model_perf.preprocess_fn.preprocess(img_path)
-        output = model_perf.model_loader.infer(processed_input)
+        label = labels_dict[filename]  # e.g. 0
 
-        # Determine predicted label
-        if isinstance(output, torch.Tensor):
-            pred = int(output.argmax().item())
-        elif isinstance(output, list):
-            pred = int(np.argmax(output[0]))
-        else:
-            raise ValueError("Unsupported output type from inference.")
+        image = Image.open(sample_path).convert("RGB")
+        image_tensor = model_perf.preprocess_fn.preprocess(image_path=sample_path)
 
-        # Compare to ground truth
-        if pred == labels_dict[filename]:
+        prediction = model_perf.predict(image_tensor)
+        print(f"Prediction: {prediction}, Label: {label}")
+
+        if prediction == label:
             correct += 1
         total += 1
 
-    accuracy = (correct / total) if total > 0 else 0.0
-    print(f"Accuracy: {accuracy:.2f}")
+    accuracy = correct / total if total > 0 else 0.0
+    print(f"Accuracy over {total} samples: {accuracy:.4f}")
     return accuracy, total
+
 
 # ---------------------------------------------------------------------------
 # 2. Object Detection mAP (BBox)
@@ -137,6 +139,7 @@ def evaluate_segmentation_accuracy(
     image_ids = coco_gt.getImgIds()
 
     for img_id in image_ids:
+        print("Starting Evaluation for Image ID: ", img_id, " ...")
         img_info = coco_gt.loadImgs(img_id)[0]
         img_path = os.path.join(dataset_dir, img_info["file_name"])
         if not os.path.exists(img_path):
