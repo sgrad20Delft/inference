@@ -325,9 +325,11 @@ def main():
 
         # Use a protective wrapper for the accuracy evaluation
         accuracy = 0.0
+        with open("vision/dataset_dir/mnist/labels/labels.json", "r") as f:
+            labels_dict = json.load(f)
         if args.task_type == 'classification':
             # predictions=model_perf.infer_all(args.dataset, batch_size=600)
-            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf, args.dataset,limit=50)
+            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf,labels_dict, args.dataset,limit=None)
             print(f"Evaluated {total_evaluated} samples")
         elif args.task_type == 'detection':
             accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict, subset)

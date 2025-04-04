@@ -7,7 +7,7 @@ from torchvision import transforms
 
 transform = transforms.Compose([
             transforms.Resize((224, 224)),               # Resize to 224x224
-            transforms.Grayscale(num_output_channels=3), # Convert 1-channel to 3-channel
+            # transforms.Grayscale(num_output_channels=3), # Convert 1-channel to 3-channel
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
@@ -32,6 +32,8 @@ class Preprocessor:
         """
         self.model_name = model_name
         self.model_type = model_type
+        if model_type == "huggingface":
+            self.extractor = AutoImageProcessor.from_pretrained(model_name)
         self.user_preprocess_fn = user_preprocess_fn
         self.input_size = input_size  # Resize all images to a fixed size
 
@@ -85,5 +87,5 @@ class Preprocessor:
 
     def _preprocess_huggingface(self, image):
         """Preprocess for Hugging Face models (use Hugging Face tokenizer)."""
-        extractor = AutoImageProcessor.from_pretrained(self.model_name)
-        return extractor(image, return_tensors="pt")  # Convert to tensor
+        # extractor = AutoImageProcessor.from_pretrained(self.model_name)
+        return self.extractor(image, return_tensors="pt")  # Convert to tensor
