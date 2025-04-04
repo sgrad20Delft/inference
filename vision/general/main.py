@@ -312,14 +312,6 @@ def main():
             traceback.print_exc()
             acc_energy = {"total_energy_wh": 0.0}
 
-    # test_accuracy = run_test(
-    #     dataset_dir=args.dataset,
-    #     labels_dict_path="vision/dataset_dir/mnist/mnist_images/labels.json",
-    #     model_perf=model_perf,
-    #     limit=10  # or however many you want
-    # )
-    # print(f"[run_test] Test accuracy on {10} files: {test_accuracy:.4f}")
-
     #Run accuracy evaluation
     try:
         print("\n=== Running Accuracy Evaluation ===")
@@ -328,9 +320,11 @@ def main():
 
         # Use a protective wrapper for the accuracy evaluation
         accuracy = 0.0
+        with open(args.labels_dict, "r") as f:
+            labels_dict = json.load(f)
         if args.task_type == 'classification':
             # predictions=model_perf.infer_all(args.dataset, batch_size=600)
-            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf, args.dataset,limit=50)
+            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf,labels_dict, args.dataset,limit=None)
             print(f"Evaluated {total_evaluated} samples")
         elif args.task_type == 'detection':
             accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict, subset)

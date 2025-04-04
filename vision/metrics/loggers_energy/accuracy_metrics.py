@@ -22,7 +22,7 @@ except LookupError:
 # ---------------------------------------------------------------------------
 # 1. Classification Accuracy
 # ---------------------------------------------------------------------------
-def evaluate_classification_accuracy(model_perf, dataset_path,limit=None):
+def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=None):
 
 
     correct = 0
@@ -35,12 +35,9 @@ def evaluate_classification_accuracy(model_perf, dataset_path,limit=None):
         sample_paths = sample_paths[:limit]
 
     print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
-    with open("C:\\Users\\Luc\\inference\\vision\\dataset_dir\\mnist\\labels.json", "r") as f:
-        labels_dict = json.load(f)
 
 
-
-    batch_size = 50
+    batch_size = 6000
     num_batches = ceil(len(sample_paths) / batch_size)
 
     for batch_idx in range(num_batches):
