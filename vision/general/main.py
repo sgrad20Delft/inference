@@ -142,7 +142,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     if mode == "AccuracyOnly":
         max_count = min(model_perf.dataset_size(), 9468)  # up to 10k
     else:
-        max_count = min(model_perf.dataset_size(), 500)
+        max_count = 500#min(model_perf.dataset_size(), 500)
     # Create SUT and QSL objects
     sut = None
     qsl = None
@@ -210,11 +210,13 @@ def main():
     parser.add_argument("--model_type", choices=["pytorch", "onnx", "tensorflow", "huggingface"],
                         help="Specify model type")
     parser.add_argument("--scenario", type=str, default="SingleStream", choices=["SingleStream", "Offline"])
+    parser.add_argument("--mode", type=str, default="AccuracyOnly", choices=["AccuracyOnly", "PerformanceOnly"] )
     parser.add_argument("--preprocess_fn_file", type=str, help="File path to custom preprocessing function.")
     parser.add_argument("--task_type", choices=["classification", "detection", "segmentation"], required=True,
                         help="Type of ML task")
     parser.add_argument("--flops", type=int, required=True, help="Model FLOPs (used for EDE scoring)")
     parser.add_argument("--labels_dict", type=str, required=True, help="Path to labels.json file")
+    parser.add_argument("--energiBridge", type=str, required=True, help="Path to energibridge executable")
     parser.add_argument("--model_architecture", required=True, type=str, default="resnet18",
                         help="Model architecture: resnet18, efficientnet_b0, alexnet, etc.")
 
@@ -267,9 +269,9 @@ def main():
 
     # Initialize Unified Energy Logger
     try:
-        base = Path(__file__).resolve().parent.parent  # goes from general/ to vision/
+        base = Path(__file__).resolve().parent.parent.parent  # goes from general/ to vision/
         print(f"Base path: {base}")
-        rapl_path = base / "metrics/EnergiBridge/target/release/energibridge"
+        rapl_path = base / args.energiBridge
         print(f"RAPL path: {rapl_path}")
 
         energy_logger = UnifiedLogger(
@@ -283,31 +285,33 @@ def main():
         traceback.print_exc()
         sys.exit(1)
 
+    if args.mode == "PerformanceOnly":
     #RUN PerformanceOnly Mode
-    # try:
-    #     print("\n=== Running PerformanceOnly benchmark ===")
-    #     perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
-    #     print(f"Performance energy result: {perf_energy}")
-    #     # Force garbage collection before next test
-    #     gc.collect()
-    #     print("Waiting 10 seconds before next test...")
-    #     sleep(10)
-    # except Exception as e:
-    #     print(f"Error in PerformanceOnly benchmark: {e}")
-    #     traceback.print_exc()
-    #     perf_energy = {"total_energy_wh": 0.0}
+     try:
+         print("\n=== Running PerformanceOnly benchmark ===")
+         perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
+         print(f"Performance energy result: {perf_energy}")
+         # Force garbage collection before next test
+         gc.collect()
+         print("Waiting 10 seconds before next test...")
+         sleep(10)
+     except Exception as e:
+         print(f"Error in PerformanceOnly benchmark: {e}")
+         traceback.print_exc()
+         perf_energy = {"total_energy_wh": 0.0}
 
-    #RUN AccuracyOnly Mode
-    try:
-        print("\n=== Running AccuracyOnly benchmark ===")
-        acc_energy = run_loadgen_test(model_perf, args.scenario, "AccuracyOnly", mlperf_log_path, energy_logger)
-        print(f"Accuracy energy result: {acc_energy}")
-        # Force garbage collection after test
-        gc.collect()
-    except Exception as e:
-        print(f"Error in AccuracyOnly benchmark: {e}")
-        traceback.print_exc()
-        acc_energy = {"total_energy_wh": 0.0}
+    else:
+        #RUN AccuracyOnly Mode
+        try:
+            print("\n=== Running AccuracyOnly benchmark ===")
+            acc_energy = run_loadgen_test(model_perf, args.scenario, "AccuracyOnly", mlperf_log_path, energy_logger)
+            print(f"Accuracy energy result: {acc_energy}")
+            # Force garbage collection after test
+            gc.collect()
+        except Exception as e:
+            print(f"Error in AccuracyOnly benchmark: {e}")
+            traceback.print_exc()
+            acc_energy = {"total_energy_wh": 0.0}
 
     #Run accuracy evaluation
     try:
@@ -317,8 +321,6 @@ def main():
 
         # Use a protective wrapper for the accuracy evaluation
         accuracy = 0.0
-        with open(args.labels_dict, "r") as f:
-            labels_dict = json.load(f)
         if args.task_type == 'classification':
             # predictions=model_perf.infer_all(args.dataset, batch_size=600)
             accuracy, total_evaluated = evaluate_classification_accuracy(model_perf,labels_dict, args.dataset,limit=None)
