@@ -53,4 +53,6 @@ python3 vision/general/main.py \
   --labels_dict vision/dataset_dir/mnist/labels.json \
   --flops 390000000 \
   --preprocess_fn_file vision/general/preprocess.py
+  
+  --mode PerformanceOnly
 ```
