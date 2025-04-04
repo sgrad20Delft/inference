@@ -46,21 +46,21 @@ class ModelLoader:
         print(f"📦 Loading PyTorch model architecture: {self.model_architecture}")
         if self.model_architecture == "resnet18":
             model = models.resnet18(pretrained=True)
-            # num_ftr = model.fc.in_features
-            # model.fc = nn.Linear(num_ftr, 10)
+            num_ftr = model.fc.in_features
+            model.fc = nn.Linear(num_ftr, 10)
         elif self.model_architecture == "efficientnet_b0":
             model = models.efficientnet_b0(pretrained=True)
-            # model.features[0][0] = nn.Conv2d(
-            #     in_channels=1,
-            #     out_channels=32,
-            #     kernel_size=3,
-            #     stride=2,
-            #     padding=1,
-            #     bias=False
-            # )
+            model.features[0][0] = nn.Conv2d(
+                in_channels=1,
+                out_channels=32,
+                kernel_size=3,
+                stride=2,
+                padding=1,
+                bias=False
+            )
 
             # Replace classifier head to output 10 classes
-            # model.classifier[1] = nn.Linear(model.classifier[1].in_features, 10)
+            model.classifier[1] = nn.Linear(model.classifier[1].in_features, 10)
         elif self.model_architecture == "lenet_mnist":
             model = models.LeNet
             # Modify classifier for 10 classes
@@ -74,10 +74,10 @@ class ModelLoader:
 
         # state_dict = torch.load(model_path, map_location=self.device)
         # model.classifier[1] = nn.Linear(1280, 10)
-        # state_dict = torch.load(model_path)
-        # state_dict = {k: v for k, v in state_dict.items() if not k.startswith('fc.')}
-        #
-        # model.load_state_dict(state_dict, strict=False)
+        state_dict = torch.load(model_path)
+        state_dict = {k: v for k, v in state_dict.items() if not k.startswith('fc.')}
+
+        model.load_state_dict(state_dict, strict=False)
         print(f"Model loaded successfully!")
         return model
 
