@@ -13,8 +13,9 @@ print(base_dir)# Gets the directory of your script
 image_file = os.path.join(base_dir, "dataset_dir", "mnist", "train-images-idx3-ubyte", "train-images-idx3-ubyte")
 label_file = os.path.join(base_dir, "dataset_dir", "mnist", "train-labels-idx1-ubyte", "train-labels-idx1-ubyte")
 output_dir = os.path.join(base_dir, "dataset_dir", "mnist","mnist_images")
+label_dir = os.path.join(base_dir, "dataset_dir", "mnist","labels")
 os.makedirs(output_dir, exist_ok=True)
-
+os.makedirs(label_dir, exist_ok=True)
 # Load images
 with open(image_file, "rb") as f:
     magic, num, rows, cols = struct.unpack(">IIII", f.read(16))
@@ -35,7 +36,7 @@ for i in range(len(image_data)):
     labels_dict[filename] = int(label)
 
 # Save labels dict
-with open(os.path.join(output_dir, "labels.json"), "w") as f:
+with open(os.path.join(label_dir,"labels.json"), "w") as f:
     json.dump(labels_dict, f, indent=2)
 
 print(f"Saved {len(labels_dict)} images and labels to '{output_dir}'")

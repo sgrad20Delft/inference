@@ -3,19 +3,19 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 from transformers import AutoImageProcessor
-import torchvision.transforms as T
+from torchvision import transforms
 
-transform = T.Compose([
-    T.Grayscale(num_output_channels=3),  # Convert 1 channel → 3
-    T.Resize((224, 224)),                # ResNet18 input size
-    T.ToTensor(),                        # Convert to tensor
-    # T.Normalize(mean=[0.485, 0.456, 0.406],
-    #             std=[0.229, 0.224, 0.225])  # Imagenet normalization
-])
+transform = transforms.Compose([
+            transforms.Resize((224, 224)),               # Resize to 224x224
+            transforms.Grayscale(num_output_channels=3), # Convert 1-channel to 3-channel
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+        ])
 def custom_preprocess(image_path):
     # print(f"[CUSTOM PREPROCESS] Handling image: {image_path}")
-    image = Image.open(image_path).convert("RGB").resize((28, 28))
-    tensor=transform(image)
+    image = Image.open(image_path).convert("RGB")
+    tensor=transform(image).unsqueeze(0)
     # print("[CUSTOM PREPROCESS] shape:", tensor.shape)
     return tensor
 
@@ -34,6 +34,7 @@ class Preprocessor:
         self.model_type = model_type
         self.user_preprocess_fn = user_preprocess_fn
         self.input_size = input_size  # Resize all images to a fixed size
+
 
     def preprocess(self, image_path):
         """
@@ -64,9 +65,12 @@ class Preprocessor:
 
     def _preprocess_pytorch(self, image):
         """Preprocess for PyTorch models (convert to tensor, normalize)."""
-        image = np.array(image).astype(np.float32) / 255.0  # Normalize to [0,1]
-        image = torch.tensor(image).permute(2, 0, 1)  # Convert to (C, H, W)
-        return image.unsqueeze(0)  # Add batch dimension
+        transform_val= transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
+        return transform_val(image).unsqueeze(0) # Add batch dimension
 
     def _preprocess_onnx(self, image):
         """Preprocess for ONNX models (convert to NumPy array, normalize)."""

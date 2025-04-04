@@ -12,6 +12,7 @@ import nltk
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from tqdm import tqdm
 import os
+from math import ceil
 
 try:
     nltk.data.find("tokenizers/punkt")
@@ -21,7 +22,7 @@ except LookupError:
 # ---------------------------------------------------------------------------
 # 1. Classification Accuracy
 # ---------------------------------------------------------------------------
-def evaluate_classification_accuracy(model_perf, dataset_path, labels_dict, subset=None):
+def evaluate_classification_accuracy(model_perf, dataset_path,limit=None):
 
 
     correct = 0
@@ -29,36 +30,49 @@ def evaluate_classification_accuracy(model_perf, dataset_path, labels_dict, subs
 
     dataset_path = Path(dataset_path)
     all_paths = list(dataset_path.glob("**/*.png")) + list(dataset_path.glob("**/*.jpg")) + list(dataset_path.glob("**/*.jpeg"))
-
-
-    if subset:
-
-        sample_paths = [all_paths[i] for i in subset if i < len(all_paths)]
-    else:
-        sample_paths = all_paths
+    sample_paths = all_paths
+    if limit:
+        sample_paths = sample_paths[:limit]
 
     print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
-    with open("vision/dataset_dir/mnist/mnist_images/labels.json", "r") as f:
+    with open("vision/dataset_dir/mnist/labels/labels.json", "r") as f:
         labels_dict = json.load(f)
 
-    for sample_path in tqdm(sample_paths):
-        # Extract ground truth label from filename, assuming format: <label>_<something>.png
-        filename = sample_path.name  # e.g. "0_20551.png"
-        if filename not in labels_dict:
-            print(f"Warning: {filename} not found in labels_dict; skipping.")
+
+
+    batch_size = 50
+    num_batches = ceil(len(sample_paths) / batch_size)
+
+    for batch_idx in range(num_batches):
+        print(f"Batch {batch_idx + 1}/{num_batches}")
+        batch_paths = sample_paths[batch_idx * batch_size: (batch_idx + 1) * batch_size]
+        batch_tensors = []
+        batch_labels = []
+
+        for sample_path in batch_paths:
+            filename = sample_path.name
+            # print("Evaluating: ", filename, " ...")
+            if filename not in labels_dict:
+                print(f"Warning: {filename} not found in labels_dict; skipping.")
+                continue
+            label = labels_dict[filename]
+            image_tensor = model_perf.preprocess_fn.preprocess(image_path=sample_path)
+            batch_tensors.append(image_tensor)
+            # print("Image tensor shape: ", image_tensor.shape)
+            batch_labels.append(label)
+            # print("Label: ", label)
+
+        if not batch_tensors:
             continue
 
-        label = labels_dict[filename]  # e.g. 0
-
-        image = Image.open(sample_path).convert("RGB")
-        image_tensor = model_perf.preprocess_fn.preprocess(image_path=sample_path)
-
-        prediction = model_perf.predict(image_tensor)
-        print(f"Prediction: {prediction}, Label: {label}")
-
-        if prediction == label:
-            correct += 1
-        total += 1
+        input_tensor = torch.cat(batch_tensors, dim=0)
+        predictions = model_perf.predict(input_tensor)
+        print("Predictions: ", predictions, " ...")
+        for pred, label in zip(predictions, batch_labels):
+            print(f"Pred: {pred}, Label: {label}, Match: {pred == label}")
+            if pred == label:
+                correct += 1
+            total += 1
 
     accuracy = correct / total if total > 0 else 0.0
     print(f"Accuracy over {total} samples: {accuracy:.4f}")

@@ -37,7 +37,7 @@ def load_custom_preprocess_fn(filepath):
         callable: The custom preprocessing function.
     """
     spec = importlib.util.spec_from_file_location("custom_preprocess", filepath)
-    print(f"Loaded custom preprocessing function from {filepath} and function name is 'custom_preprocess'")
+    print(f"Loaded pytorch preprocessing function from {filepath} and function name is 'custom_preprocess'")
     custom_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(custom_module)
     return custom_module.custom_preprocess  # Ensure the function is named 'custom_preprocess' in the file
@@ -131,11 +131,16 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
         "PerformanceOnly": lg.TestMode.PerformanceOnly
     }
 
+    count = min(model_perf.dataset_size(), 60000)
     settings = lg.TestSettings()
+    settings.performance_issue_same_index = True
+    settings.min_query_count = count
+    settings.max_query_count = count
+    settings.min_duration_ms = 0  # optional: remove time constraint
     settings.scenario = scenario_map[scenario]
     settings.mode = mode_map[mode]
     if mode == "AccuracyOnly":
-        max_count = min(model_perf.dataset_size(), 100)  # up to 10k
+        max_count = min(model_perf.dataset_size(), 60000)  # up to 10k
     else:
         max_count = min(model_perf.dataset_size(), 500)
     # Create SUT and QSL objects
@@ -145,7 +150,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     try:
         sut = lg.ConstructSUT(model_perf.issue_queries, model_perf.flush_queries)
         qsl = lg.ConstructQSL(
-            model_perf.dataset_size(),
+            max_count,
             max_count,
             model_perf.load_query_samples,
             model_perf.unload_query_samples
@@ -278,7 +283,7 @@ def main():
         traceback.print_exc()
         sys.exit(1)
 
-    # RUN PerformanceOnly Mode
+    #RUN PerformanceOnly Mode
     # try:
     #     print("\n=== Running PerformanceOnly benchmark ===")
     #     perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
@@ -315,13 +320,14 @@ def main():
     #Run accuracy evaluation
     try:
         print("\n=== Running Accuracy Evaluation ===")
-        subset = model_perf.get_inferred_indices()
-        print(f"Subset size: {len(subset)}")
+        #subset = model_perf.get_inferred_indices()
+        # print(f"Subset size: {len(subset)}")
 
         # Use a protective wrapper for the accuracy evaluation
         accuracy = 0.0
         if args.task_type == 'classification':
-            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf, args.dataset, labels_dict, subset)
+            # predictions=model_perf.infer_all(args.dataset, batch_size=600)
+            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf, args.dataset,limit=50)
             print(f"Evaluated {total_evaluated} samples")
         elif args.task_type == 'detection':
             accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict, subset)

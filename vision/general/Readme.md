@@ -44,11 +44,11 @@ python main.py --model=google/vit-base-patch16-224-in21k --data=D:\\Program File
 Current readme:
 ```console
 python3 vision/general/main.py \                             
-  --model vision/general/models/efficientnet_b0.pth \
-  --model_type pytorch \
-  --model_architecture efficientnet_b0 \
+  --model google/vit-base-patch16-224-in21k
+  --model_type huggingface \
+  --model_architecture vit-base-patch16-224-in21k\
   --dataset vision/dataset_dir/mnist/mnist_images \
-  --scenario SingleStream \
+  --scenario Offline \
   --task_type classification \
   --labels_dict vision/dataset_dir/mnist/labels.json \
   --flops 390000000 \
