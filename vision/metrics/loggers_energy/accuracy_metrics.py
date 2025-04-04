@@ -37,7 +37,7 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
     print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
 
 
-    batch_size = 50
+    batch_size = 6000
     num_batches = ceil(len(sample_paths) / batch_size)
 
     for batch_idx in range(num_batches):
