@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 class EnergibridgeLogger:
-    def __init__(self, rapl_power_path="vision/metrics/EnergiBridge/target/release/energibridge", output_file="energy_log.csv"):
+    def __init__(self, rapl_power_path="vision/metrics/EnergiBridge/energibridge", output_file="energy_log.csv"):
         self.rapl_power_path = rapl_power_path
         self.output_file = str(Path(output_file).resolve())
         self.logger_process = None

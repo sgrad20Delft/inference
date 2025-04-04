@@ -35,7 +35,7 @@ def evaluate_classification_accuracy(model_perf, dataset_path,limit=None):
         sample_paths = sample_paths[:limit]
 
     print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
-    with open("vision/dataset_dir/mnist/labels/labels.json", "r") as f:
+    with open("C:\\Users\\Luc\\inference\\vision\\dataset_dir\\mnist\\labels.json", "r") as f:
         labels_dict = json.load(f)
 
 
