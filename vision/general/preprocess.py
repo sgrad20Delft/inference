@@ -88,4 +88,5 @@ class Preprocessor:
     def _preprocess_huggingface(self, image):
         """Preprocess for Hugging Face models (use Hugging Face tokenizer)."""
         # extractor = AutoImageProcessor.from_pretrained(self.model_name)
-        return self.extractor(image, return_tensors="pt")  # Convert to tensor
+        return self.extractor(image, return_tensors="pt")["pixel_values"]
+  # Convert to tensor

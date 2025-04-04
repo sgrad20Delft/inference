@@ -1,11 +1,11 @@
 {
   "experiment_name": "vit-base-patch16-224-in21k",
   "model_architecture": "vit_base_patch16_224",
-  "accuracy": 0.8947368421052632,
-  "energy_wh": 0.15180543223762077,
-  "normalized_energy": -0.3332321297118416,
-  "penalty_factor": 1.0,
-  "ede_score": 0.2238684787211815,
+  "accuracy": 0.037125748502994015,
+  "energy_wh": 0.6002512153932635,
+  "normalized_energy": -0.3329331658564045,
+  "penalty_factor": 0.0019077110061004325,
+  "ede_score": 1.8596002410905611e-07,
   "flops": 17000000000,
   "task_type": "classification"
 }

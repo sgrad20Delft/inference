@@ -1,6 +1,6 @@
 {
   "low_energy_baseline_wh": 500,
-  "high_energy_baseline_wh": 2000,
+  "high_energy_baseline_wh": 0.4715893314518831,
   "accuracy_threshold": {
     "classification": 0.85,
     "detection": 0.50,

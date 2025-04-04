@@ -5,7 +5,7 @@ from vision.metrics.loggers_energy.energibridge_logger import EnergibridgeLogger
 
 
 class UnifiedLogger:
-    def __init__(self, experiment_name='experiment', cc_output_dir='emissions', eb_output_file='energy_log.csv', rapl_power_path='vision/metrics/EnergiBridge/target/release'):
+    def __init__(self, experiment_name='experiment', cc_output_dir='emissions', eb_output_file='energy_log.csv', rapl_power_path='vision/metrics/EnergiBridge/target/release/energibridge'):
         cc_dir = Path(cc_output_dir).resolve()
         cc_dir.mkdir(parents=True, exist_ok=True)
         self.cc_tracker = CarbonTracker(name=experiment_name, output_dir=str(cc_output_dir))

@@ -62,8 +62,9 @@ class ModelPerf:
         for qs in query_samples:
             input_tensor = self.samples[qs.index]
             output = self.model_loader.infer(input_tensor)
+            # print(f"output: {output}")
             countsample+=1
-            print(f"Processing sample {countsample}")
+            # print(f"Processing sample {countsample}")
             if isinstance(output, torch.Tensor):
                 prediction = output.argmax().item()
             elif isinstance(output, list):  # ONNX or TensorFlow returns lists
@@ -76,6 +77,7 @@ class ModelPerf:
             # Filter to 10-class subset
             if self.label_index_map and prediction in self.label_index_map:
                 prediction = self.label_index_map[prediction]
+                print(f"[INFO] Matching prediction: {prediction}")
             else:
                 print(f"[WARNING] Skipping unmatched prediction: {prediction}")
                 prediction=999  # Skip predictions outside your 10-class subset

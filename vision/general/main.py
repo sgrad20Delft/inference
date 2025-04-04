@@ -132,7 +132,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
         "PerformanceOnly": lg.TestMode.PerformanceOnly
     }
 
-    count = model_perf.dataset_size()
+    count = min(model_perf.dataset_size(),9468)
     settings = lg.TestSettings()
     settings.performance_issue_same_index = True
     settings.min_query_count = count
@@ -141,7 +141,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     settings.scenario = scenario_map[scenario]
     settings.mode = mode_map[mode]
     if mode == "AccuracyOnly":
-        max_count = model_perf.dataset_size()  # up to 10k
+        max_count = min(model_perf.dataset_size(),9468)  # up to 10k
     else:
         max_count = min(model_perf.dataset_size(), 500)
     # Create SUT and QSL objects
@@ -324,7 +324,7 @@ def main():
             labels_dict = json.load(f)
 
         with open("vision/dataset_dir/imagenette/labels/imagenette_10_class_map.json") as f:
-            class_index_map = {int(k): v for k, v in json.load(f).items()}
+            class_index_map = json.load(f)
 
         if args.task_type == 'classification':
             if hasattr(model_perf, "predictions_log") and model_perf.predictions_log:

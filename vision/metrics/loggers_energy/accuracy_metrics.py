@@ -78,22 +78,27 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
 def evaluate_classification_accuracy_from_dict(pred_dict, label_dict,class_index_map=None):
     correct = 0
     total = 0
-    print(f"Pred dict: {pred_dict}")
-    for filename, gt_label in label_dict.items():
-        pred_label = pred_dict.get(filename)
-        # print(f"Evaluating: {filename}, GT: {gt_label}, Pred: {pred_label} ...")
-        if pred_label == 999:
-            continue
-        if class_index_map:
-            gt_label = class_index_map.get(gt_label, -1)
-            # pred_label = class_index_map.get(pred_label, -1)
 
-        if pred_label is not None and gt_label != -1:
-            if pred_label == gt_label:
-                correct += 1
-            total += 1
+    for filepath, gt_label in label_dict.items():
+        filename = Path(filepath).name
+        pred_label = pred_dict.get(filename)
+
+        if pred_label is None or pred_label == 999:
+            continue
+
+        # ✅ Remap ground-truth label (not prediction!)
+        if str(gt_label) in class_index_map:
+            gt_label = class_index_map[str(gt_label)]
+        else:
+            print(f"[WARN] Skipping label {gt_label} not in class_index_map")
+            continue
+        print(f"GT: {gt_label}, Pred: {pred_label}")
+        if pred_label == gt_label:
+            correct += 1
+        total += 1
 
     accuracy = correct / total if total > 0 else 0.0
+    print(f"[INFO] Evaluated {total} samples | Correct: {correct} | Accuracy: {accuracy:.4f}")
     return accuracy, total
 
 
