@@ -216,6 +216,7 @@ def main():
                         help="Type of ML task")
     parser.add_argument("--flops", type=int, required=True, help="Model FLOPs (used for EDE scoring)")
     parser.add_argument("--labels_dict", type=str, required=True, help="Path to labels.json file")
+    parser.add_argument("--energiBridge", type=str, required=True, help="Path to energibridge executable")
     parser.add_argument("--model_architecture", required=True, type=str, default="resnet18",
                         help="Model architecture: resnet18, efficientnet_b0, alexnet, etc.")
 
@@ -268,9 +269,9 @@ def main():
 
     # Initialize Unified Energy Logger
     try:
-        base = Path(__file__).resolve().parent.parent  # goes from general/ to vision/
+        base = Path(__file__).resolve().parent.parent.parent  # goes from general/ to vision/
         print(f"Base path: {base}")
-        rapl_path = base / "metrics/EnergiBridge/energibridge"
+        rapl_path = base / args.energiBridge
         print(f"RAPL path: {rapl_path}")
 
         energy_logger = UnifiedLogger(
@@ -320,8 +321,6 @@ def main():
 
         # Use a protective wrapper for the accuracy evaluation
         accuracy = 0.0
-        with open(args.labels_dict, "r") as f:
-            labels_dict = json.load(f)
         if args.task_type == 'classification':
             # predictions=model_perf.infer_all(args.dataset, batch_size=600)
             accuracy, total_evaluated = evaluate_classification_accuracy(model_perf,labels_dict, args.dataset,limit=None)

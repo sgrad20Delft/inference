@@ -1,18 +1,22 @@
 import subprocess
 import csv
+import platform
 from pathlib import Path
 
 
 class EnergibridgeLogger:
-    def __init__(self, rapl_power_path="vision/metrics/EnergiBridge/energibridge", output_file="energy_log.csv"):
-        self.rapl_power_path = rapl_power_path
+    def __init__(self, rapl_power_path="vision/metrics/EnergiBridge/energibridge.exe", output_file="energy_log.csv"):
+        self.rapl_power_path = str(Path(rapl_power_path).resolve())
         self.output_file = str(Path(output_file).resolve())
         self.logger_process = None
 
     def start_logging(self,duration=20):
         try:
+            # Choose right command based on OS
+            command = "timeout" if platform.system() == "Windows" else "sleep"
+
             self.logger_process = subprocess.Popen(
-                [self.rapl_power_path, "-o", self.output_file,"--summary","sleep",str(duration)]
+                [self.rapl_power_path, "-o", self.output_file,"--summary",command,str(duration)]
             )
             print(f"Energibridge started (output: {self.output_file})")
         except Exception as e:
@@ -37,6 +41,11 @@ class EnergibridgeLogger:
                     avg_power = sum(power_vals) / len(power_vals)
                     duration_sec = len(power_vals)  # assuming 1 reading/sec
                     energy = avg_power * duration_sec / 3600.0  # convert to Wh
+                elif "PACKAGE_ENERGY (J)" in rows[0]:
+                    start_energy = float(rows[0]["PACKAGE_ENERGY (J)"])
+                    end_energy = float(rows[-1]["PACKAGE_ENERGY (J)"])
+                    energy_joules = end_energy - start_energy
+                    energy = energy_joules / 3600.0
                 else:
                     print("Unknown energy format.")
         except Exception as e:
@@ -52,7 +61,10 @@ class EnergibridgeLogger:
             return 0.0
 
         header = lines[0].strip().split(",")
-        power_idx = header.index("SYSTEM_POWER (Watts)")
+        if "SYSTEM_POWER (Watts)" in header:
+            power_idx = header.index("SYSTEM_POWER (Watts)")
+        else:
+            power_idx = header.index('PACKAGE_ENERGY (J)')
         cpu_usage_indices = [i for i, h in enumerate(header) if h.startswith("CPU_USAGE_")]
 
         gpu_energy_wh = 0.0
