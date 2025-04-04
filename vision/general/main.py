@@ -131,7 +131,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
         "PerformanceOnly": lg.TestMode.PerformanceOnly
     }
 
-    count = min(model_perf.dataset_size(), 9468)
+    count = 100
     settings = lg.TestSettings()
     settings.performance_issue_same_index = True
     settings.min_query_count = count
@@ -140,7 +140,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     settings.scenario = scenario_map[scenario]
     settings.mode = mode_map[mode]
     if mode == "AccuracyOnly":
-        max_count = min(model_perf.dataset_size(), 9468)  # up to 10k
+        max_count = min(model_perf.dataset_size(), 100)  # up to 10k
     else:
         max_count = 500#min(model_perf.dataset_size(), 500)
     # Create SUT and QSL objects

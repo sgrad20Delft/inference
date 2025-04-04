@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from model_loader import ModelLoader  # Import ModelLoader
 from preprocess import Preprocessor
@@ -20,26 +19,12 @@ class ModelPerf:
 
         self.model_loader = ModelLoader(model_name, model_type=model_type,model_architecture=model_architecture)
         self.dataset_dir = Path(dataset_dir)
-        print(f"Dataset directory: {self.dataset_dir}")
         self.preprocess_fn = Preprocessor(model_type, model_name, user_preprocess_fn=preprocess_fn)
         self.model_architecture = model_architecture
         self.loadgen = loadgen
         self.index_to_path = self.create_index_to_path()
         self.samples = {}
-        self.label_index_map = self.create_label_for_imagenet()
 
-
-    def create_label_for_imagenet(self):
-        print(f"self.dataset_dir: {self.dataset_dir}")
-        if str(self.dataset_dir).endswith("imagenette/imagenette_images"):
-            # Load custom class index mapping from config
-            print("Loading custom class index mapping...")
-            with open("vision/dataset_dir/imagenette/labels/imagenette_10_class_map.json") as f:
-                return {int(k): v for k, v in json.load(f).items()}
-
-        else:
-            print("No custom class index mapping found.")
-            return None
     def create_index_to_path(self):
         """Creates a mapping from indices to dataset sample paths."""
         image_paths = sorted(self.dataset_dir.glob("*.*"))  # Supports multiple file types
@@ -70,13 +55,6 @@ class ModelPerf:
                 prediction = output.logits.argmax().item()
             else:
                 raise ValueError("Unsupported model output type.")
-
-            # Filter to 10-class subset
-            if self.label_index_map and prediction in self.label_index_map:
-                prediction = self.label_index_map[prediction]
-            else:
-                print(f"[WARNING] Skipping unmatched prediction: {prediction}")
-                continue  # Skip predictions outside your 10-class subset
 
             pred_np = np.array([prediction], dtype=np.int32)
             self.predictions_buffer.append(pred_np)
