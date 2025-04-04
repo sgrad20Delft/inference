@@ -1,0 +1,3 @@
+experiment_name,model_architecture,accuracy,energy_wh,normalized_energy,penalty_factor,ede_score,flops,task_type,timestamp
+efficientnet_b0,efficientnet_b0,1.0,0.07270444850750489,-0.0288959713507401,1.0,0.6953065838802738,390000000,classification,2025-04-04T19:38:19.993666
+efficientnet_b0,efficientnet_b0,1.0,0.07925427925206031,-0.01612156936570877,1.0,0.6378441921587261,390000000,classification,2025-04-04T19:39:04.259129

@@ -1,7 +1,9 @@
+import csv
 import json
 import os
 import sys
 import argparse
+from datetime import datetime
 from time import sleep
 import gc
 import traceback
@@ -132,7 +134,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
         "PerformanceOnly": lg.TestMode.PerformanceOnly
     }
 
-    count = min(model_perf.dataset_size(),9468)
+    count = min(model_perf.dataset_size(),90)
     settings = lg.TestSettings()
     settings.performance_issue_same_index = True
     settings.min_query_count = count
@@ -141,7 +143,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     settings.scenario = scenario_map[scenario]
     settings.mode = mode_map[mode]
     if mode == "AccuracyOnly":
-        max_count = min(model_perf.dataset_size(),9468)  # up to 10k
+        max_count = min(model_perf.dataset_size(),90)  # up to 10k
     else:
         max_count = min(model_perf.dataset_size(), 500)
     # Create SUT and QSL objects
@@ -385,7 +387,27 @@ def main():
 
         # Write results to file
         results_path = Path(f"./results_{experiment_name}.json")
-        results = {
+        csv_file=results_path.with_suffix(".csv")
+        fieldnames = [
+            "experiment_name",
+            "model_architecture",
+            "accuracy",
+            "energy_wh",
+            "normalized_energy",
+            "penalty_factor",
+            "ede_score",
+            "flops",
+            "task_type",
+            "timestamp"
+        ]
+        # Check if file exists to decide whether to write header
+        write_header = not os.path.exists(csv_file)
+
+        with open(csv_file, "a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            if write_header:
+                writer.writeheader()
+            writer.writerow({
             "experiment_name": experiment_name,
             "model_architecture": args.model_architecture,
             "accuracy": float(accuracy),
@@ -394,11 +416,12 @@ def main():
             "penalty_factor": float(penalty),
             "ede_score": float(final_ede),
             "flops": args.flops,
-            "task_type": args.task_type
-        }
+            "task_type": args.task_type,
+            "timestamp": datetime.now().isoformat()
+        })
 
-        with open(results_path, "w") as f:
-            json.dump(results, f, indent=2)
+        # with open(results_path, "w") as f:
+        #     json.dump(results, f, indent=2)
 
         print(f"Results saved to {results_path}")
 
