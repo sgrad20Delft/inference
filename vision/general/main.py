@@ -211,11 +211,13 @@ def main():
     parser.add_argument("--model_type", choices=["pytorch", "onnx", "tensorflow", "huggingface"],
                         help="Specify model type")
     parser.add_argument("--scenario", type=str, default="SingleStream", choices=["SingleStream", "Offline"])
+    parser.add_argument("--mode", type=str, default="AccuracyOnly", choices=["AccuracyOnly", "PerformanceOnly"] )
     parser.add_argument("--preprocess_fn_file", type=str, help="File path to custom preprocessing function.")
     parser.add_argument("--task_type", choices=["classification", "detection", "segmentation"], required=True,
                         help="Type of ML task")
     parser.add_argument("--flops", type=int, required=True, help="Model FLOPs (used for EDE scoring)")
     parser.add_argument("--labels_dict", type=str, required=True, help="Path to labels.json file")
+    parser.add_argument("--energiBridge", type=str, required=True, help="Path to energibridge executable")
     parser.add_argument("--model_architecture", required=True, type=str, default="resnet18",
                         help="Model architecture: resnet18, efficientnet_b0, alexnet, etc.")
 
@@ -268,9 +270,9 @@ def main():
 
     # Initialize Unified Energy Logger
     try:
-        base = Path(__file__).resolve().parent.parent  # goes from general/ to vision/
+        base = Path(__file__).resolve().parent.parent.parent  # goes from general/ to vision/
         print(f"Base path: {base}")
-        rapl_path = base / "metrics/EnergiBridge/target/release/energibridge"
+        rapl_path = base / args.energiBridge
         print(f"RAPL path: {rapl_path}")
 
         energy_logger = UnifiedLogger(

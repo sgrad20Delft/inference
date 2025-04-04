@@ -5,6 +5,7 @@ import torchvision.models as models
 from torch import nn
 from transformers import AutoModelForImageClassification, AutoImageProcessor
 from torchvision.transforms.functional import to_pil_image
+from torchvision import transforms
 
 class ModelLoader:
     def __init__(self, model_path, model_type, model_architecture=None):
