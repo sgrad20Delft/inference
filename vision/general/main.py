@@ -291,154 +291,141 @@ def main():
         print(f"Error initializing energy logger: {e}")
         traceback.print_exc()
         sys.exit(1)
-
-    #RUN PerformanceOnly Mode
     try:
-        print("\n=== Running PerformanceOnly benchmark ===")
-        perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
-        print(f"Performance energy result: {perf_energy}")
-        # Force garbage collection before next test
-        gc.collect()
-        print("Waiting 10 seconds before next test...")
-        sleep(10)
-    except Exception as e:
-        print(f"Error in PerformanceOnly benchmark: {e}")
-        traceback.print_exc()
-        perf_energy = {"total_energy_wh": 0.0}
-    with open("latency_performance_mode.csv", "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["sample_id", "latency_ms"])
-        for i, latency in enumerate(model_perf.latencies):
-            writer.writerow([i, latency])
-
-    #RUN AccuracyOnly Mode
-    try:
-        print("\n=== Running AccuracyOnly benchmark ===")
-        acc_energy = run_loadgen_test(model_perf, args.scenario, "AccuracyOnly", mlperf_log_path, energy_logger)
-        print(f"Accuracy energy result: {acc_energy}")
+        print("\n=== Running benchmark ===")
+        energy = run_loadgen_test(model_perf, args.scenario, args.mode, mlperf_log_path, energy_logger)
+        print(f"Accuracy energy result: {energy}")
         # Force garbage collection after test
         gc.collect()
     except Exception as e:
         print(f"Error in AccuracyOnly benchmark: {e}")
         traceback.print_exc()
-        acc_energy = {"total_energy_wh": 0.0}
+        energy = {"total_energy_wh": 0.0}
+    if args.mode=="PerformanceOnly":
+        with open("latency_performance_mode.csv", "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["sample_id", "latency_ms"])
+            for i, latency in enumerate(model_perf.latencies):
+                writer.writerow([i, latency])
 
     #Run accuracy evaluation
-    try:
-        print("\n=== Running Accuracy Evaluation ===")
-        #subset = model_perf.get_inferred_indices()
-        # print(f"Subset size: {len(subset)}")
+    elif args.mode=="AccuracyOnly":
+        try:
+            print("\n=== Running Accuracy Evaluation ===")
+            # subset = model_perf.get_inferred_indices()
+            # print(f"Subset size: {len(subset)}")
 
-        # Use a protective wrapper for the accuracy evaluation
-        accuracy = 0.0
-        with open(args.labels_dict, "r") as f:
-            labels_dict = json.load(f)
+            # Use a protective wrapper for the accuracy evaluation
+            accuracy = 0.0
+            with open(args.labels_dict, "r") as f:
+                labels_dict = json.load(f)
 
-        with open("vision/dataset_dir/imagenette/labels/imagenette_10_class_map.json") as f:
-            class_index_map = json.load(f)
+            with open("vision/dataset_dir/imagenette/labels/imagenette_10_class_map.json") as f:
+                class_index_map = json.load(f)
 
-        if args.task_type == 'classification':
-            if hasattr(model_perf, "predictions_log") and model_perf.predictions_log:
-                print("[INFO] Using predictions collected during LoadGen for accuracy evaluation.")
-                accuracy, total_evaluated = evaluate_classification_accuracy_from_dict(
-                    model_perf.predictions_log, labels_dict,class_index_map
-                )
+            if args.task_type == 'classification':
+                if hasattr(model_perf, "predictions_log") and model_perf.predictions_log:
+                    print("[INFO] Using predictions collected during LoadGen for accuracy evaluation.")
+                    accuracy, total_evaluated = evaluate_classification_accuracy_from_dict(
+                        model_perf.predictions_log, labels_dict, class_index_map
+                    )
+                else:
+                    print("[WARNING] No predictions_log found, falling back to standard predict().")
+                    accuracy, total_evaluated = evaluate_classification_accuracy(
+                        model_perf, labels_dict, args.dataset, limit=None
+                    )
+
+            elif args.task_type == 'detection':
+                accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict,
+                                                                        subset)
+                print(f"Evaluated {total_evaluated} samples")
             else:
-                print("[WARNING] No predictions_log found, falling back to standard predict().")
-                accuracy, total_evaluated = evaluate_classification_accuracy(
-                    model_perf, labels_dict, args.dataset, limit=None
-                )
+                print("Segmentation not yet supported.")
+                accuracy = 0.0
 
-        elif args.task_type == 'detection':
-            accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict, subset)
-            print(f"Evaluated {total_evaluated} samples")
-        else:
-            print("Segmentation not yet supported.")
+            print(f"Accuracy: {accuracy:.4f}")
+        except Exception as e:
+            print(f"Error during accuracy evaluation: {e}")
+            traceback.print_exc()
             accuracy = 0.0
 
-        print(f"Accuracy: {accuracy:.4f}")
-    except Exception as e:
-        print(f"Error during accuracy evaluation: {e}")
-        traceback.print_exc()
-        accuracy = 0.0
+        # Calculate EDE Score
+        try:
+            print("\n=== Running Normalization + EDE Calculation ===")
+            normalizer = DualReferenceNormalizer()
+            normalized_energy = normalizer.normalize_energy(energy["total_energy_wh"])
+            baseline_acc = normalizer.refs['accuracy_threshold'][args.task_type]
 
-    # Calculate EDE Score
-    try:
-        print("\n=== Running Normalization + EDE Calculation ===")
-        normalizer = DualReferenceNormalizer()
-        normalized_energy = normalizer.normalize_energy(acc_energy["total_energy_wh"])
-        baseline_acc = normalizer.refs['accuracy_threshold'][args.task_type]
+            penalty = EDECycleCalculator.compute_penalty(accuracy, baseline_acc)
+            ede_score = EDECycleCalculator.compute_ede_cycle(
+                accuracy=accuracy,
+                flops=args.flops,
+                inference_energy=energy["total_energy_wh"],
+                alpha=2
+            )
+            final_ede = ede_score * penalty
+        except Exception as e:
+            print(f"Error during EDE calculation: {e}")
+            traceback.print_exc()
+            normalized_energy = 0.0
+            penalty = 0.0
+            ede_score = 0.0
+            final_ede = 0.0
 
-        penalty = EDECycleCalculator.compute_penalty(accuracy, baseline_acc)
-        ede_score = EDECycleCalculator.compute_ede_cycle(
-            accuracy=accuracy,
-            flops=args.flops,
-            inference_energy=acc_energy["total_energy_wh"],
-            alpha=2
-        )
-        final_ede = ede_score * penalty
-    except Exception as e:
-        print(f"Error during EDE calculation: {e}")
-        traceback.print_exc()
-        normalized_energy = 0.0
-        penalty = 0.0
-        ede_score = 0.0
-        final_ede = 0.0
+        # Final Reporting
+        try:
+            print("\n=== Final Benchmark Report ===")
+            print(f"Accuracy: {accuracy}")
+            print(f"Inference Energy (Wh): {energy['total_energy_wh']}")
+            print(f"Normalized Energy: {normalized_energy}")
+            print(f"Penalty Factor: {penalty}")
+            print(f"Final EDE Score (with penalty): {final_ede}")
 
-    # Final Reporting
-    try:
-        print("\n=== Final Benchmark Report ===")
-        print(f"Accuracy: {accuracy}")
-        print(f"Inference Energy (Wh): {acc_energy['total_energy_wh']}")
-        print(f"Normalized Energy: {normalized_energy}")
-        print(f"Penalty Factor: {penalty}")
-        print(f"Final EDE Score (with penalty): {final_ede}")
+            # Write results to file
+            results_path = Path(f"./results_{experiment_name}.json")
 
-        # Write results to file
-        results_path = Path(f"./results_{experiment_name}.json")
+            os_name = platform.system().lower()
+            csv_file = results_path.with_name(f"{results_path.stem}_{os_name}.csv")
+            fieldnames = [
+                "experiment_name",
+                "model_architecture",
+                "accuracy",
+                "energy_wh",
+                "normalized_energy",
+                "penalty_factor",
+                "ede_score",
+                "flops",
+                "task_type",
+                "timestamp"
+            ]
+            # Check if file exists to decide whether to write header
+            write_header = not os.path.exists(csv_file)
 
-        os_name = platform.system().lower()
-        csv_file = results_path.with_name(f"{results_path.stem}_{os_name}.csv")
-        fieldnames = [
-            "experiment_name",
-            "model_architecture",
-            "accuracy",
-            "energy_wh",
-            "normalized_energy",
-            "penalty_factor",
-            "ede_score",
-            "flops",
-            "task_type",
-            "timestamp"
-        ]
-        # Check if file exists to decide whether to write header
-        write_header = not os.path.exists(csv_file)
+            with open(csv_file, "a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                if write_header:
+                    writer.writeheader()
+                writer.writerow({
+                    "experiment_name": experiment_name,
+                    "model_architecture": args.model_architecture,
+                    "accuracy": float(accuracy),
+                    "energy_wh": float(energy["total_energy_wh"]),
+                    "normalized_energy": float(normalized_energy),
+                    "penalty_factor": float(penalty),
+                    "ede_score": float(final_ede),
+                    "flops": args.flops,
+                    "task_type": args.task_type,
+                    "timestamp": datetime.now().isoformat()
+                })
 
-        with open(csv_file, "a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            if write_header:
-                writer.writeheader()
-            writer.writerow({
-            "experiment_name": experiment_name,
-            "model_architecture": args.model_architecture,
-            "accuracy": float(accuracy),
-            "energy_wh": float(acc_energy["total_energy_wh"]),
-            "normalized_energy": float(normalized_energy),
-            "penalty_factor": float(penalty),
-            "ede_score": float(final_ede),
-            "flops": args.flops,
-            "task_type": args.task_type,
-            "timestamp": datetime.now().isoformat()
-        })
+            # with open(results_path, "w") as f:
+            #     json.dump(results, f, indent=2)
 
-        # with open(results_path, "w") as f:
-        #     json.dump(results, f, indent=2)
+            print(f"Results saved to {results_path}")
 
-        print(f"Results saved to {results_path}")
-
-    except Exception as e:
-        print(f"Error generating final report: {e}")
-        traceback.print_exc()
+        except Exception as e:
+            print(f"Error generating final report: {e}")
+            traceback.print_exc()
 
     print("\n=== Benchmark Complete ===")
 
