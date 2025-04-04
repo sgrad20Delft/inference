@@ -76,7 +76,7 @@ class ModelPerf:
                 prediction = self.label_index_map[prediction]
             else:
                 print(f"[WARNING] Skipping unmatched prediction: {prediction}")
-                continue  # Skip predictions outside your 10-class subset
+                prediction=-1  # Skip predictions outside your 10-class subset
 
             pred_np = np.array([prediction], dtype=np.int32)
             self.predictions_buffer.append(pred_np)
