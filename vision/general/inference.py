@@ -27,6 +27,8 @@ class ModelPerf:
         self.index_to_path = self.create_index_to_path()
         self.samples = {}
         self.label_index_map = self.create_label_for_imagenet()
+        self.predictions_buffer = []
+        self.predictions_log = {}
 
 
     def create_label_for_imagenet(self):
@@ -76,10 +78,12 @@ class ModelPerf:
                 prediction = self.label_index_map[prediction]
             else:
                 print(f"[WARNING] Skipping unmatched prediction: {prediction}")
-                prediction=-1  # Skip predictions outside your 10-class subset
+                prediction=999  # Skip predictions outside your 10-class subset
 
             pred_np = np.array([prediction], dtype=np.int32)
             self.predictions_buffer.append(pred_np)
+            filename = Path(self.index_to_path[qs.index]).name
+            self.predictions_log[filename] = prediction
 
             response = QuerySampleResponse(qs.id, pred_np.ctypes.data, pred_np.nbytes)
             responses.append(response)

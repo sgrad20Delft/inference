@@ -48,7 +48,7 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
 
         for sample_path in batch_paths:
             filename = sample_path.name
-            # print("Evaluating: ", filename, " ...")
+            print("Evaluating: ", filename, " ...")
             if filename not in labels_dict:
                 print(f"Warning: {filename} not found in labels_dict; skipping.")
                 continue
@@ -73,6 +73,26 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
 
     accuracy = correct / total if total > 0 else 0.0
     print(f"Accuracy over {total} samples: {accuracy:.4f}")
+    return accuracy, total
+
+def evaluate_classification_accuracy_from_dict(pred_dict, label_dict,class_index_map=None):
+    correct = 0
+    total = 0
+
+    for filename, gt_label in label_dict.items():
+        pred_label = pred_dict.get(filename)
+        if pred_label == 999:
+            continue
+        if class_index_map:
+            gt_label = class_index_map.get(gt_label, -1)
+            pred_label = class_index_map.get(pred_label, -1)
+
+        if pred_label is not None and gt_label != -1:
+            if pred_label == gt_label:
+                correct += 1
+            total += 1
+
+    accuracy = correct / total if total > 0 else 0.0
     return accuracy, total
 
 

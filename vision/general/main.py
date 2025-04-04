@@ -22,6 +22,7 @@ from vision.metrics.loggers_energy.EDE_Cycle import EDECycleCalculator
 from vision.metrics.loggers_energy.accuracy_metrics import evaluate_classification_accuracy, evaluate_detection_accuracy
 from vision.metrics.loggers_energy.dual_reference_normalizer import DualReferenceNormalizer
 from vision.metrics.loggers_energy.unified_logger import UnifiedLogger
+from vision.metrics.loggers_energy.accuracy_metrics import evaluate_classification_accuracy_from_dict
 
 sys.path.append(os.path.abspath("."))
 
@@ -319,10 +320,22 @@ def main():
         accuracy = 0.0
         with open(args.labels_dict, "r") as f:
             labels_dict = json.load(f)
+
+        with open("vision/dataset_dir/imagenette/labels/imagenette_10_class_map.json") as f:
+            class_index_map = {int(k): v for k, v in json.load(f).items()}
+
         if args.task_type == 'classification':
-            # predictions=model_perf.infer_all(args.dataset, batch_size=600)
-            accuracy, total_evaluated = evaluate_classification_accuracy(model_perf,labels_dict, args.dataset,limit=None)
-            print(f"Evaluated {total_evaluated} samples")
+            if hasattr(model_perf, "predictions_log") and model_perf.predictions_log:
+                print("[INFO] Using predictions collected during LoadGen for accuracy evaluation.")
+                accuracy, total_evaluated = evaluate_classification_accuracy_from_dict(
+                    model_perf.predictions_log, labels_dict,class_index_map
+                )
+            else:
+                print("[WARNING] No predictions_log found, falling back to standard predict().")
+                accuracy, total_evaluated = evaluate_classification_accuracy(
+                    model_perf, labels_dict, args.dataset, limit=None
+                )
+
         elif args.task_type == 'detection':
             accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict, subset)
             print(f"Evaluated {total_evaluated} samples")
