@@ -1,0 +1,11 @@
+{
+  "experiment_name": "vit-base-patch16-224-in21k",
+  "model_architecture": "vit_base_patch16_224",
+  "accuracy": 0.8947368421052632,
+  "energy_wh": 0.15180543223762077,
+  "normalized_energy": -0.3332321297118416,
+  "penalty_factor": 1.0,
+  "ede_score": 0.2238684787211815,
+  "flops": 17000000000,
+  "task_type": "classification"
+}

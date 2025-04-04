@@ -4,7 +4,7 @@ import tensorflow as tf
 import torchvision.models as models
 from torch import nn
 from transformers import AutoModelForImageClassification, AutoImageProcessor
-
+from torchvision.transforms.functional import to_pil_image
 
 class ModelLoader:
     def __init__(self, model_path, model_type, model_architecture=None):
@@ -138,7 +138,16 @@ class ModelLoader:
                     if input_tensor.dim() == 5 and input_tensor.shape[1] == 1:
                         input_tensor = input_tensor.squeeze(1)
 
-                    inputs = self.processor(images=input_tensor, return_tensors="pt").to(self.device)
+
+
+                    # Convert batched tensor to list of PIL images
+                    if input_tensor.ndim == 4:  # Batch of images
+                        images = [to_pil_image(img) for img in input_tensor]
+                    else:  # Single image
+                        images = to_pil_image(input_tensor)
+
+                    inputs = self.processor(images=images, return_tensors="pt").to(self.device)
+
                 else:
                     inputs = {k: v.to(self.device) for k, v in input_tensor.items()}
 

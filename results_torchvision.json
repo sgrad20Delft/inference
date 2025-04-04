@@ -1,11 +1,11 @@
 {
   "experiment_name": "torchvision",
   "model_architecture": "efficientnet_b0",
-  "accuracy": 0.12410533423362592,
-  "energy_wh": 0.3961733893268148,
-  "normalized_energy": -0.3330692177404488,
-  "penalty_factor": 0.021317832505522494,
-  "ede_score": 4.189632868079545e-05,
+  "accuracy": 1.0,
+  "energy_wh": 0.08752030617102949,
+  "normalized_energy": -0.33327498646255266,
+  "penalty_factor": 1.0,
+  "ede_score": 0.5776017467976583,
   "flops": 390000000,
   "task_type": "classification"
 }
