@@ -4,6 +4,8 @@ from model_loader import ModelLoader  # Import ModelLoader
 from preprocess import Preprocessor
 from mlperf_loadgen import QuerySampleResponse
 import torch
+import time
+
 import numpy as np
 class ModelPerf:
     def __init__(self, model_name, model_type, dataset_dir, model_architecture,loadgen, preprocess_fn=None):
@@ -29,6 +31,7 @@ class ModelPerf:
         self.label_index_map = self.create_label_for_imagenet()
         self.predictions_buffer = []
         self.predictions_log = {}
+        self.latencies=[]
 
 
     def create_label_for_imagenet(self):
@@ -57,9 +60,12 @@ class ModelPerf:
         """Processes MLPerf queries and runs inference."""
         responses = []
         self.predictions_buffer = []
+
+
         # Keep refs to prediction buffers
         countsample=0
         for qs in query_samples:
+            start_time = time.time()
             input_tensor = self.samples[qs.index]
             output = self.model_loader.infer(input_tensor)
             # print(f"output: {output}")
@@ -86,7 +92,9 @@ class ModelPerf:
             self.predictions_buffer.append(pred_np)
             filename = Path(self.index_to_path[qs.index]).name
             self.predictions_log[filename] = prediction
-
+            end_time = time.time()
+            latency_ms = (end_time - start_time) * 1000  # convert to ms
+            self.latencies.append(latency_ms)
             response = QuerySampleResponse(qs.id, pred_np.ctypes.data, pred_np.nbytes)
             responses.append(response)
 

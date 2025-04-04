@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import platform
 import sys
 import argparse
 from datetime import datetime
@@ -134,7 +135,10 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
         "PerformanceOnly": lg.TestMode.PerformanceOnly
     }
 
-    count = min(model_perf.dataset_size(),90)
+    if mode == "AccuracyOnly":
+        count = min(model_perf.dataset_size(), 9468)  # up to 10k
+    else:
+        count = min(model_perf.dataset_size(), 500)
     settings = lg.TestSettings()
     settings.performance_issue_same_index = True
     settings.min_query_count = count
@@ -143,7 +147,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     settings.scenario = scenario_map[scenario]
     settings.mode = mode_map[mode]
     if mode == "AccuracyOnly":
-        max_count = min(model_perf.dataset_size(),90)  # up to 10k
+        max_count = min(model_perf.dataset_size(),9468)  # up to 10k
     else:
         max_count = min(model_perf.dataset_size(), 500)
     # Create SUT and QSL objects
@@ -289,18 +293,23 @@ def main():
         sys.exit(1)
 
     #RUN PerformanceOnly Mode
-    # try:
-    #     print("\n=== Running PerformanceOnly benchmark ===")
-    #     perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
-    #     print(f"Performance energy result: {perf_energy}")
-    #     # Force garbage collection before next test
-    #     gc.collect()
-    #     print("Waiting 10 seconds before next test...")
-    #     sleep(10)
-    # except Exception as e:
-    #     print(f"Error in PerformanceOnly benchmark: {e}")
-    #     traceback.print_exc()
-    #     perf_energy = {"total_energy_wh": 0.0}
+    try:
+        print("\n=== Running PerformanceOnly benchmark ===")
+        perf_energy = run_loadgen_test(model_perf, args.scenario, "PerformanceOnly", mlperf_log_path, energy_logger)
+        print(f"Performance energy result: {perf_energy}")
+        # Force garbage collection before next test
+        gc.collect()
+        print("Waiting 10 seconds before next test...")
+        sleep(10)
+    except Exception as e:
+        print(f"Error in PerformanceOnly benchmark: {e}")
+        traceback.print_exc()
+        perf_energy = {"total_energy_wh": 0.0}
+    with open("latency_performance_mode.csv", "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["sample_id", "latency_ms"])
+        for i, latency in enumerate(model_perf.latencies):
+            writer.writerow([i, latency])
 
     #RUN AccuracyOnly Mode
     try:
@@ -387,7 +396,9 @@ def main():
 
         # Write results to file
         results_path = Path(f"./results_{experiment_name}.json")
-        csv_file=results_path.with_suffix(".csv")
+
+        os_name = platform.system().lower()
+        csv_file = results_path.with_name(f"{results_path.stem}_{os_name}.csv")
         fieldnames = [
             "experiment_name",
             "model_architecture",
