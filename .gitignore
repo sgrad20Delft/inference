@@ -9,3 +9,9 @@ loadgen/mlcommons_loadgen.egg-info/
 loadgen/mlperf_conf.h
 vision/.DS_Store
 vision/datasets/.DS_Store
+.venv/
+vision/classification_and_detection
+.idea
+.venv
+./.git
+vision/general/models/onnx_models

@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import platform
+import random
 import sys
 import argparse
 from datetime import datetime
@@ -9,18 +10,17 @@ from time import sleep
 import gc
 import traceback
 
+import importlib.util
+
 import mlperf_loadgen as lg
 import shutil
 from pathlib import Path
-
+import subprocess
 from PIL import Image
 
 from inference import ModelPerf  # Generalized model handler
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
-
-# For dynamic import
-import importlib.util
 from vision.metrics.loggers_energy.EDE_Cycle import EDECycleCalculator
 from vision.metrics.loggers_energy.accuracy_metrics import evaluate_classification_accuracy, evaluate_detection_accuracy
 from vision.metrics.loggers_energy.dual_reference_normalizer import DualReferenceNormalizer
@@ -28,6 +28,11 @@ from vision.metrics.loggers_energy.unified_logger import UnifiedLogger
 from vision.metrics.loggers_energy.accuracy_metrics import evaluate_classification_accuracy_from_dict
 
 sys.path.append(os.path.abspath("."))
+
+
+def dataset_size(self):
+    """Returns total number of samples in the dataset."""
+    return len(self.index_to_path)
 
 
 def load_custom_preprocess_fn(filepath):
@@ -45,82 +50,30 @@ def load_custom_preprocess_fn(filepath):
     custom_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(custom_module)
     return custom_module.custom_preprocess  # Ensure the function is named 'custom_preprocess' in the file
-def basic_preprocess(path):
-    img = Image.open(path).convert("RGB")
-    # We won't do anything fancy – just open & close it:
-    img.load()
-    return True
-
-# # def run_test(dataset_dir):
-# #     files = sorted(os.listdir(dataset_dir))
-# #     for i, fname in enumerate(files):
-# #         full_path = os.path.join(dataset_dir, fname)
-# #         print(f"[TEST] Processing {i}: {full_path}")
-# #         try:
-# #             basic_preprocess(full_path)
-# #             # Optionally do inference if you want:
-# #             # tensor = transform(Image.open(full_path))
-# #             # output = model(tensor.unsqueeze(0))
-# #         except Exception as e:
-# #             print(f"[TEST] ERROR on file {fname}: {e}")
-# #             break
-# #     print("Completed test of 10 images")
-# def run_test(dataset_dir, labels_dict_path, model_perf, limit=10):
-#     """
-#     Runs a small accuracy test on up to 'limit' files in 'dataset_dir'.
-#     Uses 'labels_dict_path' to map filenames -> integer labels.
-#     """
-#     # 1) Load label JSON
-#     with open(labels_dict_path, "r") as f:
-#         labels_dict = json.load(f)
-#
-#     # 2) Gather up to 'limit' files
-#     files = sorted(os.listdir(dataset_dir))[:limit]
-#
-#     correct = 0
-#     total = 0
-#
-#     for i, fname in enumerate(files):
-#         # We skip non-image files if needed
-#         if not fname.lower().endswith((".png", ".jpg", ".jpeg")):
-#             continue
-#
-#         # 3) If your labels dict keys are like "0_20551.png", we must match that exact filename
-#         if fname not in labels_dict:
-#             print(f"[run_test] WARNING: {fname} not found in labels_dict, skipping.")
-#             continue
-#
-#         label = labels_dict[fname]
-#
-#         # 4) Full path
-#         full_path = os.path.join(dataset_dir, fname)
-#         print(f"[run_test] Processing {i}: {full_path} - label={label}")
-#
-#         try:
-#             # 5) Preprocess + predict
-#             input_tensor = model_perf.preprocess_fn.preprocess(full_path)
-#             input_tensor = input_tensor.to(model_perf.device)
-#
-#             pred = model_perf.predict(input_tensor)
-#
-#             # Compare
-#             if pred == label:
-#                 correct += 1
-#             total += 1
-#
-#             print(f"[run_test]  => pred={pred}, label={label}")
-#         except Exception as e:
-#             print(f"[run_test] ERROR on file {fname}: {e}")
-#             break
-#
-#     # 6) Final accuracy
-#     accuracy = (correct / total) if total > 0 else 0.0
-#     print(f"[run_test] Completed testing {total} images out of {limit}; accuracy: {accuracy:.4f}")
-#     return accuracy
-#
 
 
-def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
+def load_labels_dict_from_script(script_path):
+    spec = importlib.util.spec_from_file_location("label_module", script_path)
+    label_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(label_module)
+
+    if hasattr(label_module, "get_labels_dict"):
+        return label_module.get_labels_dict()
+    else:
+        raise ValueError(f"No function named get_labels_dict() found in {script_path}")
+
+def load_annotations_file_script(script_path):
+    spec = importlib.util.spec_from_file_location("label_module", script_path)
+    label_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(label_module)
+
+    if hasattr(label_module, "get_image_ids"):
+        return label_module.get_image_ids()
+    else:
+        raise ValueError(f"No function named get_image_ids() found in {script_path}")
+
+
+def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger,sample_size=None):
     """
     Run MLPerf LoadGen test with robust error handling and memory management.
     """
@@ -134,11 +87,15 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
         "AccuracyOnly": lg.TestMode.AccuracyOnly,
         "PerformanceOnly": lg.TestMode.PerformanceOnly
     }
+    performance_Only_query_count = random.randint(1, model_perf.dataset_size())
+    print(performance_Only_query_count)
 
-    if mode == "AccuracyOnly":
-        count = min(model_perf.dataset_size(), 9468)  # up to 10k
+    if mode == "AccuracyOnly" and sample_size is not None:
+        count = min(model_perf.dataset_size(), sample_size)# up to 10k
+
     else:
-        count = min(model_perf.dataset_size(), 500)
+        count = min(model_perf.dataset_size(), performance_Only_query_count)
+
     settings = lg.TestSettings()
     settings.performance_issue_same_index = True
     settings.min_query_count = count
@@ -146,10 +103,10 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
     settings.min_duration_ms = 0  # optional: remove time constraint
     settings.scenario = scenario_map[scenario]
     settings.mode = mode_map[mode]
-    if mode == "AccuracyOnly":
-        max_count = min(model_perf.dataset_size(),9468)  # up to 10k
+    if mode == "AccuracyOnly" and sample_size is not None:
+        max_count = min(model_perf.dataset_size(), sample_size) # up to 10k
     else:
-        max_count = min(model_perf.dataset_size(), 500)
+        max_count = min(model_perf.dataset_size(), performance_Only_query_count)
     # Create SUT and QSL objects
     sut = None
     qsl = None
@@ -211,6 +168,7 @@ def run_loadgen_test(model_perf, scenario, mode, log_path, energy_logger):
 
 
 def main():
+    global labels_dict
     parser = argparse.ArgumentParser(description="Run MLPerf model evaluation")
     parser.add_argument("--model", type=str, help="Path to the model file or predefined model name.")
     parser.add_argument("--dataset", type=str, required=True, help="Path to the dataset directory.")
@@ -222,12 +180,18 @@ def main():
     parser.add_argument("--task_type", choices=["classification", "detection", "segmentation"], required=True,
                         help="Type of ML task")
     parser.add_argument("--flops", type=int, required=True, help="Model FLOPs (used for EDE scoring)")
-    parser.add_argument("--labels_dict", type=str, required=True, help="Path to labels.json file")
+    parser.add_argument("--labels_processing_file", type=str, required=True, help="Path to processing labels dictionary")
     parser.add_argument("--energiBridge", type=str, required=True, help="Path to energibridge executable")
     parser.add_argument("--model_architecture", required=True, type=str, default="resnet18",
                         help="Model architecture: resnet18, efficientnet_b0, alexnet, etc.")
+    parser.add_argument("--index_map",  type=str,
+                        help="Mappings from index to class name. Required for classification tasks for smaller datasets")
+    parser.add_argument("--sample_size", type=str, required=True,
+                        help="Size of sample we would like to to evaluate")
 
     args = parser.parse_args()
+    if args.sample_size:
+        sample_size = int(args.sample_size)
 
     # Dynamically load the custom preprocessing function if provided
     custom_preprocess_fn = None
@@ -244,6 +208,12 @@ def main():
     else:
         experiment_name = Path(args.model).stem
 
+    if args.labels_processing_file:
+        labels_dict = load_labels_dict_from_script(args.labels_processing_file)
+
+    if args.index_map:
+        with open(args.index_map, "r") as f:
+            index_map = json.load(f)
     # Set up logging directories
     try:
         log_base = Path(f"metrics/logs/{experiment_name}")
@@ -258,7 +228,7 @@ def main():
     # Initialize Model Performance Evaluation
     try:
         print("Initializing ModelPerf...")
-        model_perf = ModelPerf(args.model, args.model_type, args.dataset, loadgen=lg,
+        model_perf = ModelPerf(args.model, args.model_type, args.dataset, loadgen=lg, task_type=args.task_type,
                                preprocess_fn=custom_preprocess_fn,
                                model_architecture=args.model_architecture)
     except Exception as e:
@@ -266,14 +236,8 @@ def main():
         traceback.print_exc()
         sys.exit(1)
 
-    # Load labels dictionary
-    try:
-        with open(args.labels_dict, "r") as f:
-            labels_dict = json.load(f)
-    except Exception as e:
-        print(f"Error loading labels dictionary: {e}")
-        sys.exit(1)
-
+    os_name = platform.system().lower()
+    print(f"Running on {os_name}")
     # Initialize Unified Energy Logger
     try:
         base = Path(__file__).resolve().parent.parent.parent  # goes from general/ to vision/
@@ -293,7 +257,7 @@ def main():
         sys.exit(1)
     try:
         print("\n=== Running benchmark ===")
-        energy = run_loadgen_test(model_perf, args.scenario, args.mode, mlperf_log_path, energy_logger)
+        energy = run_loadgen_test(model_perf, args.scenario, args.mode, mlperf_log_path, energy_logger,sample_size)
         print(f"Accuracy energy result: {energy}")
         # Force garbage collection after test
         gc.collect()
@@ -302,7 +266,9 @@ def main():
         traceback.print_exc()
         energy = {"total_energy_wh": 0.0}
     if args.mode=="PerformanceOnly":
-        with open("latency_performance_mode.csv", "w", newline="") as f:
+        results_path = Path(f"./latency_results_performanceonly_{experiment_name}.json")
+        csv_file = results_path.with_name(f"{results_path.stem}_{os_name}.csv")
+        with open(csv_file, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["sample_id", "latency_ms"])
             for i, latency in enumerate(model_perf.latencies):
@@ -312,33 +278,18 @@ def main():
     elif args.mode=="AccuracyOnly":
         try:
             print("\n=== Running Accuracy Evaluation ===")
-            # subset = model_perf.get_inferred_indices()
-            # print(f"Subset size: {len(subset)}")
-
-            # Use a protective wrapper for the accuracy evaluation
-            accuracy = 0.0
-            with open(args.labels_dict, "r") as f:
-                labels_dict = json.load(f)
-
-            with open("vision/dataset_dir/imagenette/labels/imagenette_10_class_map.json") as f:
-                class_index_map = json.load(f)
-
             if args.task_type == 'classification':
-                if hasattr(model_perf, "predictions_log") and model_perf.predictions_log:
-                    print("[INFO] Using predictions collected during LoadGen for accuracy evaluation.")
-                    accuracy, total_evaluated = evaluate_classification_accuracy_from_dict(
-                        model_perf.predictions_log, labels_dict, class_index_map
-                    )
+                if args.index_map:
+                 print("[INFO] Using index map for default accuracy evaluation.")
+                 accuracy, total_evaluated = evaluate_classification_accuracy_from_dict(
+                        model_perf.predictions_log, labels_dict, index_map)
                 else:
-                    print("[WARNING] No predictions_log found, falling back to standard predict().")
+                    print("[INFO] Using default direct inference (batch mode) for accuracy evaluation.")
                     accuracy, total_evaluated = evaluate_classification_accuracy(
-                        model_perf, labels_dict, args.dataset, limit=None
-                    )
-
+                        model_perf.predictions_log, labels_dict,args.dataset)
             elif args.task_type == 'detection':
-                accuracy, total_evaluated = evaluate_detection_accuracy(model_perf, args.dataset, args.labels_dict,
-                                                                        subset)
-                print(f"Evaluated {total_evaluated} samples")
+                 accuracy, total_evaluated = evaluate_detection_accuracy(model_perf.predictions_log, args.dataset, load_annotations_file_script(args.labels_processing_file))
+                 print(f"Evaluated {total_evaluated} samples")
             else:
                 print("Segmentation not yet supported.")
                 accuracy = 0.0

@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -34,7 +35,7 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
     if limit:
         sample_paths = sample_paths[:limit]
 
-    print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
+    # print(f"Running accuracy evaluation on {len(sample_paths)} samples...")
 
 
     batch_size = 9469
@@ -48,9 +49,9 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
 
         for sample_path in batch_paths:
             filename = sample_path.name
-            print("Evaluating: ", filename, " ...")
+            # print("Evaluating: ", filename, " ...")
             if filename not in labels_dict:
-                print(f"Warning: {filename} not found in labels_dict; skipping.")
+                # print(f"Warning: {filename} not found in labels_dict; skipping.")
                 continue
             label = labels_dict[filename]
             image_tensor = model_perf.preprocess_fn.preprocess(image_path=sample_path)
@@ -78,22 +79,19 @@ def evaluate_classification_accuracy(model_perf,labels_dict, dataset_path,limit=
 def evaluate_classification_accuracy_from_dict(pred_dict, label_dict,class_index_map=None):
     correct = 0
     total = 0
+    # print(f"Prediction Dict: {pred_dict}")
 
-    for filepath, gt_label in label_dict.items():
+    for filepath, true_label in label_dict.items():
         filename = Path(filepath).name
         pred_label = pred_dict.get(filename)
-
-        if pred_label is None or pred_label == 999:
+        if class_index_map:
+          if str(true_label) in class_index_map:
+             true_label = class_index_map[str(true_label)]
+          else:
+            print(f"[WARN] Skipping label {true_label} not in class_index_map")
             continue
 
-        # ✅ Remap ground-truth label (not prediction!)
-        if str(gt_label) in class_index_map:
-            gt_label = class_index_map[str(gt_label)]
-        else:
-            print(f"[WARN] Skipping label {gt_label} not in class_index_map")
-            continue
-        print(f"GT: {gt_label}, Pred: {pred_label}")
-        if pred_label == gt_label:
+        if pred_label == true_label:
             correct += 1
         total += 1
 
@@ -105,10 +103,24 @@ def evaluate_classification_accuracy_from_dict(pred_dict, label_dict,class_index
 # ---------------------------------------------------------------------------
 # 2. Object Detection mAP (BBox)
 # ---------------------------------------------------------------------------
+def transform_prediction_logs(prediction_logs):
+    transformed_logs = {}
+    for file_name, predictions in prediction_logs.items():
+        boxes = predictions.get("boxes", [])
+        scores = predictions.get("scores", [])
+        labels = predictions.get("labels", [])
+        # Combine boxes, scores, and labels into a list of dicts
+        detections = [
+            {"bbox": bbox, "score": score, "category_id": category_id}
+            for bbox, score, category_id in zip(boxes, scores, labels)
+        ]
+        transformed_logs[file_name] = detections
+    return transformed_logs
+
 def evaluate_detection_accuracy(
-    model_perf,
-    dataset_dir: str,
-    labels_dict_json: str
+    prediction_logs,
+    dataset_dir,
+    image_ids
 ):
     """
     Evaluate object detection performance by computing mAP (COCO bbox metric).
@@ -123,35 +135,50 @@ def evaluate_detection_accuracy(
 
     We use model_perf for both preprocessor + inference.
     """
-    coco_gt = coco.COCO(labels_dict_json)
+    annotation_path="vision/dataset_dir/coco/annotations/instances_val2017.json"
+    coco_gt = coco.COCO(annotation_path)
     results = []
-    image_ids = coco_gt.getImgIds()
-
+    prediction_logs=transform_prediction_logs(prediction_logs)
+    print(f"Prediction logs: {prediction_logs}")
+    # print(f"Image IDs: {image_ids}")
     for img_id in image_ids:
         img_info = coco_gt.loadImgs(img_id)[0]
-        img_path = os.path.join(dataset_dir, img_info["file_name"])
+        file_name = img_info["file_name"]
+        img_path = os.path.join(dataset_dir, file_name)
         if not os.path.exists(img_path):
             continue
 
-        processed_input = model_perf.preprocess_fn.preprocess(img_path)
-        output = model_perf.model_loader.infer(processed_input)
+        detections = prediction_logs.get(file_name, [])  # <--- FIXED LINE
 
-        if not isinstance(output, list):
+        if not isinstance(detections, list):
             raise ValueError("Detection model output must be a list of dicts.")
-        for det in output:
-            # Ensure 'bbox', 'score', 'category_id' are present
+
+        for det in detections:
+            if not all(k in det for k in ("bbox", "score", "category_id")):
+                print(f"Skipping malformed detection: {det}")
+                continue
             det["image_id"] = int(img_id)
             results.append(det)
+            print(f"Appended detection: {det}")
 
     # Convert results list to JSON string for loadRes
     results_json = json.dumps(results)
-    coco_dt = coco_gt.loadRes(results_json)
+    # Save the JSON data to a temporary file.
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w") as temp_file:
+        temp_file.write(results_json)
+        temp_file_path = temp_file.name  # Get the temporary file path
+
+    # Pass the temporary file path to `coco_gt.loadRes()`
+    print(f"Results JSON saved to temporary file: {temp_file_path}")
+    coco_dt = coco_gt.loadRes(temp_file_path)
+
+    # Continue with evaluation
     coco_eval = cocoeval.COCOeval(coco_gt, coco_dt, "bbox")
     coco_eval.evaluate()
     coco_eval.accumulate()
     coco_eval.summarize()
     mAP = coco_eval.stats[0]
-    return mAP, len(image_ids)
+    return  mAP,len(image_ids)
 
 
 # ---------------------------------------------------------------------------

@@ -3,7 +3,9 @@ import math
 
 class EDECycleCalculator:
     @staticmethod
-    def compute_penalty(accuracy, baseline_accuracy, beta=2):
+    def compute_penalty(accuracy, baseline_accuracy, beta):
+        if beta is None:
+            beta=2
         if accuracy >= baseline_accuracy:
             return 1.0
         return (accuracy / baseline_accuracy) ** beta

@@ -1,58 +1,141 @@
-### Installation
 
-Navigate to the loadgen folder and run:
+# Vision Inference Benchmarking Framework
 
-```console
-$env:CFLAGS = "-std=c++14 -O3"
-python -m pip install .
+This repository extends MLCommons' inference framework with support for customizable vision models, preprocessing, postprocessing, accuracy evaluation, and energy metrics.
+
+---
+
+## ️ Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/sgrad20Delft/inference.git
+cd inference
 ```
-For macOS, 
-```console
+
+### 2. Set Up Virtual Environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
+```
+
+### 3. Install MLCommons LoadGen (C++ wrapper)
+
+For macOS/Linux:
+
+```bash
 export CFLAGS="-std=c++14 -O3"
+git clone --recursive https://github.com/mlcommons/inference.git /tmp/loadgen
+cd /tmp/loadgen/loadgen
 python -m pip install .
 ```
 
-This installs the c++ library version of mlperf.
+### 4. Install This Project
 
-Then navigate to vision/general and install the python packages from requirements.txt
+From the project root:
 
-```console
-pip install -r requirements.txt
+```bash
+pip install -e .
+pip install -r vision/general/requirements.txt
 ```
-#### Energibridge
-Make sure to have energibridge installed in your local machine, particularly under in vision/metrics of project repo. For installation, refer to the github page of energibridge(https://github.com/tdurieux/EnergiBridge/tree/main)
 
-### Running
+---
 
-To run a test on a model, run main.py in vision/general. Main.py takes a number of arguments:
+##  EnergiBridge Setup
 
-- model. Either the path to the model file or the name of the model on huggingface.
-- dataset. The path to the dataset of images to classify.
-- model_type. The type of model to test. Possible choices are ["pytorch", "onnx", "huggingface"].
-- scenario. The scenario to run the test in. Possible choices are ["SingleStream", "Offline"].
-- preprocess_fn_file. Path to a file with a custom preprocessing function (optional)
-- flops. Number of floating point operations 
-- task_type. Type of computer vision task
-- model-architecture. Type of model to be installed
+Make sure EnergiBridge is built and available under:
 
-Example:
-
-```console
-python main.py --model=google/vit-base-patch16-224-in21k --data=D:\\Program Files (x86)\\inference\\mnist_images",
-              --scenario=SingleStream --model_type=huggingface
 ```
-Current readme:
-```console
-python3 vision/general/main.py \                             
-  --model google/vit-base-patch16-224-in21k
-  --model_type huggingface \
-  --model_architecture vit-base-patch16-224-in21k\
-  --dataset vision/dataset_dir/mnist/mnist_images \
+vision/metrics/EnergiBridge/target/release/energibridge
+```
+
+Build instructions:  
+➡️ [EnergiBridge GitHub](https://github.com/tdurieux/EnergiBridge/tree/main)
+
+---
+
+##  Running Inference
+
+After installation, run your test using the `vision-infer` command:
+
+```bash
+vision-infer \
+  --model vision/general/models/onnx_models/yolov4.onnx \
+  --model_type onnx \
+  --model_architecture yolov4 \
+  --dataset vision/dataset_dir/coco/coco_images \
   --scenario Offline \
-  --task_type classification \
-  --labels_dict vision/dataset_dir/mnist/labels.json \
+  --mode AccuracyOnly \
+  --task_type detection \
   --flops 390000000 \
-  --preprocess_fn_file vision/general/preprocess.py
-  
-  --mode PerformanceOnly
+  --sample_size 10 \
+  --preprocess_fn_file vision/general/datasetpreprocess/custom_preprocess.py \
+  --annotations_file vision/general/models/labels/cocoimage/getlabels_coco.py \
+  --annotations_path vision/dataset_dir/coco/annotations/instances_val2017.json \
+  --accuracy_fn vision/metrics/loggers_energy/custom_metrics.py \
+  --alpha 0.5 \
+  --penalty_override 1.0 \
+  --energiBridge vision/metrics/EnergiBridge/target/release/energibridge \
+  --post_process_fn vision/general/datapostprocess/postprocess_coco.py \
+  --reference_config vision/metrics/loggers_energy/reference_config.json
 ```
+
+---
+
+## 🧩 Command-Line Arguments
+
+| Argument                  | Description |
+|---------------------------|-------------|
+| `--model`                 | Path to the model file (ONNX or HuggingFace) |
+| `--model_type`            | One of: `onnx`, `pytorch`, `huggingface` |
+| `--model_architecture`    | Architecture name (e.g., `yolov4`, `resnet18`) |
+| `--dataset`               | Path to input dataset directory |
+| `--scenario`              | MLPerf scenario: `Offline`, `SingleStream` |
+| `--mode`                  | `AccuracyOnly` or `PerformanceOnly` |
+| `--task_type`             | Vision task: `classification`, `detection`, etc. |
+| `--flops`                 | Model FLOPs for EDE score calculation |
+| `--sample_size`           | Number of samples to evaluate |
+| `--preprocess_fn_file`    | Path to a Python file with a custom `preprocess()` function |
+| `--annotations_file`      | Script to return image ID mapping from annotations |
+| `--annotations_path`      | COCO JSON annotation file |
+| `--accuracy_fn`           | Script implementing `evaluate_accuracy()` |
+| `--alpha`                 | Alpha hyperparameter for EDE |
+| `--penalty_override`      | Custom penalty override value |
+| `--energiBridge`          | Path to compiled EnergiBridge binary |
+| `--post_process_fn`       | Python file with `postprocess_onnx_output()` |
+| `--reference_config`      | JSON config for energy normalization |
+
+---
+
+## 📦 Development Tips
+
+- Use `pip install -e .` to auto-reload changes during development.
+- Always activate the virtualenv before running:  
+  `source .venv/bin/activate`
+- Add `.venv/` to your `.gitignore`.
+
+---
+
+## 🧪 Testing CLI
+
+```bash
+vision-infer --help
+```
+
+---
+
+## Troubleshooting
+
+- If `vision-infer` isn't recognized after install, re-run:  
+  `pip install -e .`
+- Make sure EnergiBridge is compiled and executable.
+
+
+---
+
+##  License
+
+This project builds on MLCommons Inference and includes modifications under the [Apache 2.0 License](LICENSE).
