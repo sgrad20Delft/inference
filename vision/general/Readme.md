@@ -139,3 +139,6 @@ vision-infer --help
 ##  License
 
 This project builds on MLCommons Inference and includes modifications under the [Apache 2.0 License](LICENSE).
+
+### Model Download 
+For trying out different models, use this link  [https://github.com/onnx/models/tree/main](Model Download)
