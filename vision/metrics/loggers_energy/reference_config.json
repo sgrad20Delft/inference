@@ -1,0 +1,9 @@
+{
+  "low_energy_baseline_wh": 0.08752030617102949,
+  "high_energy_baseline_wh": 0.60025121539326354,
+  "accuracy_threshold": {
+    "classification": 0.98,
+    "detection": 0.50,
+    "segmentation": 0.50
+  }
+}

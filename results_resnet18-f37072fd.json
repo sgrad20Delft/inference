@@ -1,0 +1,11 @@
+{
+  "experiment_name": "resnet18-f37072fd",
+  "model_architecture": "resnet18",
+  "accuracy": 0.1,
+  "energy_wh": 0.04236222500169352,
+  "normalized_energy": -0.3333050918499989,
+  "penalty_factor": 0.013840830449826992,
+  "ede_score": 0.000165166023230048,
+  "flops": 390000000,
+  "task_type": "classification"
+}

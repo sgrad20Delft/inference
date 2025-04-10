@@ -25,7 +25,7 @@ def parse_args():
         help="output directory for upscaled coco dataset",
     )
     parser.add_argument(
-        "--images", "-im", type=str, default="val2017", help="image directory"
+        "--images", "-im", type=str, default="coco_images", help="image directory"
     )
     parser.add_argument(
         "--annotations",

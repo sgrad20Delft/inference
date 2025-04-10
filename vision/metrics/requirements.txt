@@ -1,0 +1,7 @@
+numpy
+torch
+Pillow
+pycocotools
+nltk
+codecarbon
+panopticapi

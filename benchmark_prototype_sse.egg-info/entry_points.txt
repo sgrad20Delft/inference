@@ -1,0 +1,2 @@
+[console_scripts]
+vision-infer = vision.general.generalized_main:main

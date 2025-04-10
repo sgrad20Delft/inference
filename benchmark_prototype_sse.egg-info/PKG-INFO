@@ -1,0 +1,429 @@
+Metadata-Version: 2.4
+Name: benchmark-prototype-sse
+Version: 0.1.0
+Summary: Modular MLPerf Inference Framework with Vision Extensions
+Home-page: https://github.com/sgrad20Delft/inference
+Author: Group-24
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+Requires-Dist: absl-py==2.1.0
+Requires-Dist: accelerate==1.2.1
+Requires-Dist: aio-pika==9.5.5
+Requires-Dist: aiofiles==24.1.0
+Requires-Dist: aiohappyeyeballs==2.4.4
+Requires-Dist: aiohttp==3.11.11
+Requires-Dist: aiormq==6.8.1
+Requires-Dist: aiosignal==1.3.2
+Requires-Dist: annotated-types==0.7.0
+Requires-Dist: anyio==4.8.0
+Requires-Dist: arrow==1.3.0
+Requires-Dist: astunparse==1.6.3
+Requires-Dist: async-timeout==4.0.3
+Requires-Dist: attrs==24.3.0
+Requires-Dist: bert-score==0.3.13
+Requires-Dist: bitsandbytes==0.42.0
+Requires-Dist: blinker==1.9.0
+Requires-Dist: certifi==2024.12.14
+Requires-Dist: cffi==1.17.1
+Requires-Dist: charset-normalizer==3.4.1
+Requires-Dist: click==8.1.8
+Requires-Dist: codecarbon==2.8.3
+Requires-Dist: colorama==0.4.6
+Requires-Dist: coloredlogs==15.0.1
+Requires-Dist: contourpy==1.3.1
+Requires-Dist: cryptography==44.0.2
+Requires-Dist: cycler==0.12.1
+Requires-Dist: dataclasses-json==0.6.7
+Requires-Dist: datasets==3.2.0
+Requires-Dist: dill==0.3.8
+Requires-Dist: diskcache==5.6.3
+Requires-Dist: distro==1.9.0
+Requires-Dist: dm-tree==0.1.9
+Requires-Dist: docstring_parser==0.16
+Requires-Dist: einops==0.8.1
+Requires-Dist: etils==1.12.2
+Requires-Dist: eval_type_backport==0.2.2
+Requires-Dist: exceptiongroup==1.2.2
+Requires-Dist: fastapi==0.115.6
+Requires-Dist: fief-client==0.20.0
+Requires-Dist: filelock==3.16.1
+Requires-Dist: Flask==3.1.0
+Requires-Dist: Flask-API==3.1
+Requires-Dist: flatbuffers==25.2.10
+Requires-Dist: fonttools==4.55.3
+Requires-Dist: frozenlist==1.5.0
+Requires-Dist: fsspec==2024.9.0
+Requires-Dist: gast==0.6.0
+Requires-Dist: gitdb==4.0.12
+Requires-Dist: GitPython==3.1.44
+Requires-Dist: google-pasta==0.2.0
+Requires-Dist: gritql==0.1.5
+Requires-Dist: grpcio==1.71.0
+Requires-Dist: h11==0.14.0
+Requires-Dist: h2==4.2.0
+Requires-Dist: h5py==3.13.0
+Requires-Dist: hpack==4.1.0
+Requires-Dist: httpcore==1.0.7
+Requires-Dist: httpx==0.27.2
+Requires-Dist: httpx-sse==0.4.0
+Requires-Dist: huggingface-hub==0.27.1
+Requires-Dist: humanfriendly==10.0
+Requires-Dist: Hypercorn==0.17.3
+Requires-Dist: hyperframe==6.1.0
+Requires-Dist: idna==3.10
+Requires-Dist: immutabledict==4.2.1
+Requires-Dist: importlib_resources==6.5.2
+Requires-Dist: itsdangerous==2.2.0
+Requires-Dist: Jinja2==3.1.5
+Requires-Dist: jiter==0.8.2
+Requires-Dist: joblib==1.4.2
+Requires-Dist: jsonpatch==1.33
+Requires-Dist: jsonpath-python==1.0.6
+Requires-Dist: jsonpointer==3.0.0
+Requires-Dist: jwcrypto==1.5.6
+Requires-Dist: kagglehub==0.3.11
+Requires-Dist: keras==3.9.0
+Requires-Dist: kiwisolver==1.4.8
+Requires-Dist: langchain==0.3.14
+Requires-Dist: langchain-cli==0.0.35
+Requires-Dist: langchain-community==0.3.14
+Requires-Dist: langchain-core==0.3.29
+Requires-Dist: langchain-ollama==0.2.2
+Requires-Dist: langchain-openai==0.3.0
+Requires-Dist: langchain-text-splitters==0.3.5
+Requires-Dist: langserve==0.3.1
+Requires-Dist: langsmith==0.2.10
+Requires-Dist: libclang==18.1.1
+Requires-Dist: logger==1.4
+Requires-Dist: Markdown==3.7
+Requires-Dist: markdown-it-py==3.0.0
+Requires-Dist: MarkupSafe==3.0.2
+Requires-Dist: marshmallow==3.25.1
+Requires-Dist: matplotlib==3.10.0
+Requires-Dist: mdurl==0.1.2
+Requires-Dist: metrics==0.0.2
+Requires-Dist: mistralai==1.2.6
+Requires-Dist: ml_dtypes==0.5.1
+Requires-Dist: mlcommons_loadgen==5.0.15
+Requires-Dist: mpmath==1.3.0
+Requires-Dist: msgspec==0.19.0
+Requires-Dist: multidict==6.1.0
+Requires-Dist: multiprocess==0.70.16
+Requires-Dist: mypy-extensions==1.0.0
+Requires-Dist: namex==0.0.8
+Requires-Dist: networkx==3.4.2
+Requires-Dist: nltk==3.9.1
+Requires-Dist: numpy==1.26.4
+Requires-Dist: nvidia-ml-py==12.570.86
+Requires-Dist: ollama==0.4.5
+Requires-Dist: onnxruntime==1.21.0
+Requires-Dist: openai==1.59.6
+Requires-Dist: opencv-python==4.11.0.86
+Requires-Dist: opt_einsum==3.4.0
+Requires-Dist: optree==0.14.1
+Requires-Dist: orjson==3.10.14
+Requires-Dist: packaging==24.2
+Requires-Dist: pamqp==3.3.0
+Requires-Dist: pandas==2.2.3
+Requires-Dist: pillow==11.1.0
+Requires-Dist: priority==2.0.0
+Requires-Dist: prometheus_client==0.21.1
+Requires-Dist: promise==2.3
+Requires-Dist: prompt_toolkit==3.0.50
+Requires-Dist: propcache==0.2.1
+Requires-Dist: protobuf==4.21.12
+Requires-Dist: psutil==6.1.1
+Requires-Dist: py-cpuinfo==9.0.0
+Requires-Dist: pyarrow==18.1.0
+Requires-Dist: pycocotools==2.0.8
+Requires-Dist: pycparser==2.22
+Requires-Dist: pydantic==2.10.5
+Requires-Dist: pydantic-settings==2.7.1
+Requires-Dist: pydantic_core==2.27.2
+Requires-Dist: Pygments==2.19.1
+Requires-Dist: pynvml==12.0.0
+Requires-Dist: pyparsing==3.2.1
+Requires-Dist: python-dateutil==2.9.0.post0
+Requires-Dist: python-dotenv==1.0.1
+Requires-Dist: pytz==2024.2
+Requires-Dist: PyYAML==6.0.2
+Requires-Dist: Quart==0.20.0
+Requires-Dist: questionary==2.1.0
+Requires-Dist: RapidFuzz==3.12.2
+Requires-Dist: redis==5.2.0
+Requires-Dist: fakeredis==2.26.1
+Requires-Dist: redis-sentinel-connector==0.1.8
+Requires-Dist: regex==2024.11.6
+Requires-Dist: requests==2.32.3
+Requires-Dist: requests-toolbelt==1.0.0
+Requires-Dist: rich==13.9.4
+Requires-Dist: rouge-score==0.1.2
+Requires-Dist: safetensors==0.5.2
+Requires-Dist: scipy==1.15.1
+Requires-Dist: seaborn==0.13.2
+Requires-Dist: sentencepiece==0.2.0
+Requires-Dist: shellingham==1.5.4
+Requires-Dist: simple-parsing==0.1.7
+Requires-Dist: six==1.17.0
+Requires-Dist: smmap==5.0.2
+Requires-Dist: sniffio==1.3.1
+Requires-Dist: sortedcontainers==2.4.0
+Requires-Dist: SQLAlchemy==2.0.37
+Requires-Dist: sse-starlette==1.8.2
+Requires-Dist: starlette==0.41.3
+Requires-Dist: sympy==1.13.1
+Requires-Dist: tabulate==0.9.0
+Requires-Dist: taskgroup==0.2.2
+Requires-Dist: tenacity==9.0.0
+Requires-Dist: tensorboard==2.19.0
+Requires-Dist: tensorboard-data-server==0.7.2
+Requires-Dist: tensorflow==2.19.0
+Requires-Dist: tensorflow-datasets==4.9.8
+Requires-Dist: tensorflow-io-gcs-filesystem==0.37.1
+Requires-Dist: tensorflow-metadata==1.17.0
+Requires-Dist: termcolor==2.3.0
+Requires-Dist: tiktoken==0.8.0
+Requires-Dist: tokenizers==0.21.0
+Requires-Dist: toml==0.10.2
+Requires-Dist: tomli==2.2.1
+Requires-Dist: tomlkit==0.13.2
+Requires-Dist: torch==2.6.0
+Requires-Dist: torchvision==0.21.0
+Requires-Dist: tqdm==4.67.1
+Requires-Dist: transformers==4.48.0
+Requires-Dist: typer==0.9.4
+Requires-Dist: types-python-dateutil==2.9.0.20241206
+Requires-Dist: typing-inspect==0.9.0
+Requires-Dist: typing_extensions==4.12.2
+Requires-Dist: tzdata==2024.2
+Requires-Dist: urllib3==2.3.0
+Requires-Dist: uvicorn==0.34.0
+Requires-Dist: wcwidth==0.2.13
+Requires-Dist: Werkzeug==3.1.3
+Requires-Dist: wrapt==1.17.2
+Requires-Dist: wsproto==1.2.0
+Requires-Dist: xxhash==3.5.0
+Requires-Dist: yarl==1.18.3
+Requires-Dist: yaspin==3.1.0
+Requires-Dist: zipp==3.21.0
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# MLPerf™ Inference Benchmark Suite
+MLPerf Inference is a benchmark suite for measuring how fast systems can run models in a variety of deployment scenarios. 
+
+Please see the [MLPerf Inference benchmark paper](https://arxiv.org/abs/1911.02549) for a detailed description of the benchmarks along with the motivation and guiding principles behind the benchmark suite. If you use any part of this benchmark (e.g., reference implementations, submissions, etc.), please cite the following:
+
+
+```
+@misc{reddi2019mlperf,
+    title={MLPerf Inference Benchmark},
+    author={Vijay Janapa Reddi and Christine Cheng and David Kanter and Peter Mattson and Guenther Schmuelling and Carole-Jean Wu and Brian Anderson and Maximilien Breughe and Mark Charlebois and William Chou and Ramesh Chukka and Cody Coleman and Sam Davis and Pan Deng and Greg Diamos and Jared Duke and Dave Fick and J. Scott Gardner and Itay Hubara and Sachin Idgunji and Thomas B. Jablin and Jeff Jiao and Tom St. John and Pankaj Kanwar and David Lee and Jeffery Liao and Anton Lokhmotov and Francisco Massa and Peng Meng and Paulius Micikevicius and Colin Osborne and Gennady Pekhimenko and Arun Tejusve Raghunath Rajan and Dilip Sequeira and Ashish Sirasao and Fei Sun and Hanlin Tang and Michael Thomson and Frank Wei and Ephrem Wu and Lingjie Xu and Koichi Yamada and Bing Yu and George Yuan and Aaron Zhong and Peizhao Zhang and Yuchen Zhou},
+    year={2019},
+    eprint={1911.02549},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
+}
+```
+
+Please see [here](https://docs.mlcommons.org/inference/benchmarks/) for the MLPerf inference documentation website which includes automated commands to run MLPerf inference benchmarks using different implementations.
+
+## MLPerf Inference v5.0 (submission deadline February 28, 2025)
+
+For submissions, please use the master branch and any commit since the [5.0 seed release](https://github.com/mlcommons/inference/commit/5d83ed5de438ffb55bca4cdb2966fba90a9dbca6) although it is best to use the latest commit in the [master branch](https://github.com/mlcommons/inference).
+
+For power submissions please use [SPEC PTD 1.11.1](https://github.com/mlcommons/power) (needs special access) and any commit of the power-dev repository after the [code-freeze](https://github.com/mlcommons/power-dev/commit/65eedd4a60b5c50ac44cbae061d2a428e9fb190a)
+
+
+| model | reference app | framework | dataset | category
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx, tvm, ncnn | imagenet2012 | edge,datacenter |
+| retinanet 800x800 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | pytorch, onnx | openimages resized to 800x800| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge |
+| dlrm-v2 | [recommendation/dlrm_v2](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm_v2/pytorch) | pytorch | Multihot Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| gpt-j | [language/gpt-j](https://github.com/mlcommons/inference/tree/master/language/gpt-j)| pytorch | CNN-Daily Mail | edge,datacenter |
+| stable-diffusion-xl | [text_to_image](https://github.com/mlcommons/inference/tree/master/text_to_image) | pytorch | COCO 2014| edge,datacenter |
+| llama2-70b | [language/llama2-70b](https://github.com/mlcommons/inference/tree/master/language/llama2-70b) | pytorch | OpenOrca | datacenter |
+| llama3.1-405b | [language/llama3-405b](https://github.com/mlcommons/inference/tree/master/language/llama3.1-405b) | pytorch | LongBench, LongDataCollections, Ruler, GovReport | datacenter |
+| mixtral-8x7b | [language/mixtral-8x7b](https://github.com/mlcommons/inference/tree/master/language/mixtral-8x7b) | pytorch | OpenOrca, MBXP, GSM8K | datacenter |
+| rgat | [graph/rgat](https://github.com/mlcommons/inference/tree/master/graph/R-GAT) | pytorch | IGBH | datacenter |
+| pointpainting | [automotive/3d-object-detection](https://github.com/mlcommons/inference/tree/master/automotive/3d-object-detection) | pytorch, onnx | Waymo Open Dataset | edge |
+
+* Framework here is given for the reference implementation. Submitters are free to use their own frameworks to run the benchmark.
+
+
+## MLPerf Inference v4.1 (submission deadline July 26, 2024)
+
+For submissions, please use the master branch and any commit since the [4.1 seed release](https://github.com/mlcommons/inference/pull/1736/files) although it is best to use the latest commit. v4.1 tag will be created from the master branch after the result publication.
+
+For power submissions please use [SPEC PTD 1.10](https://github.com/mlcommons/power/tree/main/inference_v1.0) (needs special access) and any commit of the power-dev repository after the [code-freeze](https://github.com/mlcommons/power-dev/pull/325)
+
+| model | reference app | framework | dataset | category
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx, tvm, ncnn | imagenet2012 | edge,datacenter |
+| retinanet 800x800 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | pytorch, onnx | openimages resized to 800x800| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm-v2 | [recommendation/dlrm_v2](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm_v2/pytorch) | pytorch | Multihot Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| gpt-j | [language/gpt-j](https://github.com/mlcommons/inference/tree/master/language/gpt-j)| pytorch | CNN-Daily Mail | edge,datacenter |
+| stable-diffusion-xl | [text_to_image](https://github.com/mlcommons/inference/tree/master/text_to_image) | pytorch | COCO 2014| edge,datacenter |
+| llama2-70b | [language/llama2-70b](https://github.com/mlcommons/inference/tree/master/language/llama2-70b) | pytorch | OpenOrca | datacenter |
+| mixtral-8x7b | [language/mixtral-8x7b](https://github.com/mlcommons/inference/tree/master/language/mixtral-8x7b) | pytorch | OpenOrca, MBXP, GSM8K | datacenter |
+
+* Framework here is given for the reference implementation. Submitters are free to use their own frameworks to run the benchmark.
+
+## MLPerf Inference v4.0 (submission February 23, 2024)
+
+There is an extra one-week extension allowed only for the llama2-70b submissions. For submissions, please use the master branch and any commit since the [4.0 seed release](https://github.com/mlcommons/inference/commit/8e36925bd36a503e39fcbbc488e9e46126f079ed) although it is best to use the latest commit. v4.0 tag will be created from the master branch after the result publication.
+
+For power submissions please use [SPEC PTD 1.10](https://github.com/mlcommons/power/tree/main/inference_v1.0) (needs special access) and any commit of the power-dev repository after the [code-freeze](https://github.com/mlcommons/power-dev/commit/4e026f43481f46ad57d2464d28924018444b0428)
+
+| model | reference app | framework | dataset | category
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx, tvm, ncnn | imagenet2012 | edge,datacenter |
+| retinanet 800x800 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | pytorch, onnx | openimages resized to 800x800| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm-v2 | [recommendation/dlrm_v2](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm_v2/pytorch) | pytorch | Multihot Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/master/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+| gpt-j | [language/gpt-j](https://github.com/mlcommons/inference/tree/master/language/gpt-j)| pytorch | CNN-Daily Mail | edge,datacenter |
+| stable-diffusion-xl | [text_to_image](https://github.com/mlcommons/inference/tree/master/text_to_image) | pytorch | COCO 2014| edge,datacenter |
+| llama2-70b | [language/llama2-70b](https://github.com/mlcommons/inference/tree/master/language/llama2-70b) | pytorch | OpenOrca | datacenter |
+
+* Framework here is given for the reference implementation. Submitters are free to use their own frameworks to run the benchmark.
+
+## MLPerf Inference v3.1 (submission August 18, 2023)
+Please use [v3.1 tag](https://github.com/mlcommons/inference/releases/tag/v3.1) (```git checkout v3.1```) if you would like to reproduce the v3.1 results. 
+
+For reproducing power submissions please use the `master` branch of the [MLCommons power-dev](https://github.com/mlcommons/power-dev) repository and checkout to [e9e16b1299ef61a2a5d8b9abf5d759309293c440](https://github.com/mlcommons/power-dev/tree/e9e16b1299ef61a2a5d8b9abf5d759309293c440). 
+
+You can see the individual README files in the benchmark task folders for more details regarding the benchmarks. For reproducing the submitted results please see the README files under the respective submitter folders in the [inference v3.1 results repository](https://github.com/mlcommons/inference_results_v3.1).
+
+| model | reference app | framework | dataset | category
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx, tvm, ncnn | imagenet2012 | edge,datacenter |
+| retinanet 800x800 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | pytorch, onnx | openimages resized to 800x800| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm-v2 | [recommendation/dlrm_v2](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm_v2/pytorch) | pytorch | Multihot Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/master/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+| gpt-j | [language/gpt-j](https://github.com/mlcommons/inference/tree/master/language/gpt-j)| pytorch | CNN-Daily Mail | edge,datacenter |
+
+
+## MLPerf Inference v3.0 (submission 03/03/2023)
+Please use the v3.0 tag (```git checkout v3.0```) if you would like to reproduce v3.0 results.
+
+You can see the individual Readme files in the reference app for more details.
+
+| model | reference app | framework | dataset | category
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx, tvm | imagenet2012 | edge,datacenter |
+| retinanet 800x800 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | pytorch, onnx | openimages resized to 800x800| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm | [recommendation/dlrm](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm/pytorch) | pytorch, tensorflow | Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/master/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+
+
+## MLPerf Inference v2.1 (submission 08/05/2022)
+Use the r2.1 branch (```git checkout r2.1```) if you want to submit or reproduce v2.1 results.
+
+See the individual Readme files in the reference app for details.
+
+| model | reference app | framework | dataset | category
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx | imagenet2012 | edge,datacenter |
+| retinanet 800x800 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | pytorch, onnx | openimages resized to 800x800| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm | [recommendation/dlrm](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm/pytorch) | pytorch, tensorflow | Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/master/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+
+
+## MLPerf Inference v2.0 (submission 02/25/2022)
+Use the r2.0 branch (```git checkout r2.0```) if you want to submit or reproduce v2.0 results.
+
+See the individual Readme files in the reference app for details.
+
+| model | reference app | framework | dataset | category |
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, onnx | imagenet2012 | edge,datacenter |
+| ssd-mobilenet 300x300 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, pytorch, onnx| coco resized to 300x300 | edge |
+| ssd-resnet34 1200x1200 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/master/vision/classification_and_detection) | tensorflow, pytorch, onnx | coco resized to 1200x1200| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/master/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm | [recommendation/dlrm](https://github.com/mlcommons/inference/tree/master/recommendation/dlrm/pytorch) | pytorch, tensorflow | Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet-kits19](https://github.com/mlcommons/inference/tree/master/vision/medical_imaging/3d-unet-kits19) | pytorch, tensorflow, onnx | KiTS19 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/master/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+
+
+## MLPerf Inference v1.1 (submission 08/13/2021)
+Use the r1.1 branch (```git checkout r1.1```) if you want to submit or reproduce v1.1 results.
+
+See the individual Readme files in the reference app for details.
+
+| model | reference app | framework | dataset | category |
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r1.1/vision/classification_and_detection) | tensorflow, onnx | imagenet2012 | edge,datacenter |
+| ssd-mobilenet 300x300 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r1.1/vision/classification_and_detection) | tensorflow, pytorch, onnx| coco resized to 300x300 | edge |
+| ssd-resnet34 1200x1200 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r1.1/vision/classification_and_detection) | tensorflow, pytorch, onnx | coco resized to 1200x1200| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/r1.1/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm | [recommendation/dlrm](https://github.com/mlcommons/inference/tree/r1.1/recommendation/dlrm/pytorch) | pytorch, tensorflow | Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet](https://github.com/mlcommons/inference/tree/r1.1/vision/medical_imaging/3d-unet) | pytorch, tensorflow(?), onnx(?) | BraTS 2019 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/r1.1/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+
+## MLPerf Inference v1.0 (submission 03/19/2021)
+Use the r1.0 branch (```git checkout r1.0```) if you want to submit or reproduce v1.0 results.
+
+See the individual Readme files in the reference app for details.
+
+| model | reference app | framework | dataset | category |
+| ---- | ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r1.0/vision/classification_and_detection) | tensorflow, onnx | imagenet2012 | edge,datacenter |
+| ssd-mobilenet 300x300 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r1.0/vision/classification_and_detection) | tensorflow, pytorch, onnx| coco resized to 300x300 | edge |
+| ssd-resnet34 1200x1200 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r1.0/vision/classification_and_detection) | tensorflow, pytorch, onnx | coco resized to 1200x1200| edge,datacenter |
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/r1.0/language/bert) | tensorflow, pytorch, onnx | squad-1.1 | edge,datacenter |
+| dlrm | [recommendation/dlrm](https://github.com/mlcommons/inference/tree/r1.0/recommendation/dlrm/pytorch) | pytorch, tensorflow(?) | Criteo Terabyte | datacenter |
+| 3d-unet | [vision/medical_imaging/3d-unet](https://github.com/mlcommons/inference/tree/r1.0/vision/medical_imaging/3d-unet) | pytorch, tensorflow(?), onnx(?) | BraTS 2019 | edge,datacenter |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/r1.0/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus | edge,datacenter |
+
+
+## MLPerf Inference v0.7 (submission 9/18/2020)
+Use the r0.7 branch (```git checkout r0.7```) if you want to submit or reproduce v0.7 results.
+
+See the individual Readme files in the reference app for details.
+
+| model | reference app | framework | dataset |
+| ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.7/vision/classification_and_detection) | tensorflow, pytorch, onnx | imagenet2012 |
+| ssd-mobilenet 300x300 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.7/vision/classification_and_detection) | tensorflow, pytorch, onnx| coco resized to 300x300 | 
+| ssd-resnet34 1200x1200 | [vision/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.7/vision/classification_and_detection) | tensorflow, pytorch, onnx | coco resized to 1200x1200|
+| bert | [language/bert](https://github.com/mlcommons/inference/tree/r0.7/language/bert) | tensorflow, pytorch, onnx | squad-1.1 |
+| dlrm | [recommendation/dlrm](https://github.com/mlcommons/inference/tree/r0.7/recommendation/dlrm/pytorch) | pytorch, tensorflow(?), onnx(?) | Criteo Terabyte |
+| 3d-unet | [vision/medical_imaging/3d-unet](https://github.com/mlcommons/inference/tree/r0.7/vision/medical_imaging/3d-unet) | pytorch, tensorflow(?), onnx(?) | BraTS 2019 |
+| rnnt | [speech_recognition/rnnt](https://github.com/mlcommons/inference/tree/r0.7/speech_recognition/rnnt) | pytorch | OpenSLR LibriSpeech Corpus |
+
+## MLPerf Inference v0.5
+Use the r0.5 branch (```git checkout r0.5```) if you want to reproduce v0.5 results.
+
+See the individual Readme files in the reference app for details.
+
+| model | reference app | framework | dataset |
+| ---- | ---- | ---- | ---- |
+| resnet50-v1.5 | [v0.5/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.5/v0.5/classification_and_detection) | tensorflow, pytorch, onnx | imagenet2012 |
+| mobilenet-v1 | [v0.5/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.5/v0.5/classification_and_detection) |tensorflow, pytorch, onnx | imagenet2012 |
+| ssd-mobilenet 300x300 | [v0.5/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.5/v0.5/classification_and_detection) |tensorflow, pytorch, onnx | coco resized to 300x300 |
+| ssd-resnet34 1200x1200 | [v0.5/classification_and_detection](https://github.com/mlcommons/inference/tree/r0.5/v0.5/classification_and_detection) | tensorflow, pytorch, onnx | coco resized to 1200x1200 |
+| gnmt | [v0.5/translation/gnmt/](https://github.com/mlcommons/inference/tree/r0.5/v0.5/translation/gnmt/tensorflow) | tensorflow, pytorch | See Readme |
+
